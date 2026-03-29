@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LGS – Öğrenilmiş Dersler</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --accent: #e85d26;
+    --accent2: #f7b731;
+    --text: #1e1b18;
+    --muted: #888070;
+    --border: #e8e4dc;
+    --green: #2eab6e;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  header { text-align: center; margin-bottom: 32px; }
+  header h1 { font-family: 'Lora', serif; font-size: 2rem; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
+  header h1 span { color: var(--accent); font-style: italic; }
+  header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab { padding: 8px 20px; border-radius: 99px; border: 2px solid var(--border); background: var(--card); cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--muted); transition: all 0.2s; }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── FORM ── */
+  .form-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; max-width: 680px; margin: 0 auto; }
+  .form-card h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .form-card h2::before { content: '✏️'; font-size: 1.2rem; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text);
+    background: var(--bg); outline: none; transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
+  .field textarea { resize: vertical; min-height: 100px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Dosya yükleme */
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 16px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: var(--bg);
+  }
+  .upload-area:hover { border-color: var(--accent); background: #fff8f5; }
+  .upload-area.has-file { border-color: var(--green); background: #f0fff8; }
+  .upload-area input[type="file"] { display: none; }
+  .upload-label { font-size: 0.88rem; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .upload-label.has-file { color: var(--green); font-weight: 700; }
+  .upload-preview { margin-top: 10px; position: relative; display: inline-block; }
+  .upload-preview img { max-width: 100%; max-height: 180px; border-radius: 8px; box-shadow: var(--shadow); }
+  .remove-img { position: absolute; top: -8px; right: -8px; background: var(--accent); color: #fff; border: none; border-radius: 99px; width: 22px; height: 22px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 24px; border-radius: 10px; border: none; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.92rem; cursor: pointer; transition: all 0.18s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #c94e1d; transform: translateY(-1px); }
+  .btn-secondary { background: var(--bg); color: var(--muted); border: 2px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: #fff0ee; color: var(--accent); border: 2px solid #fdd; font-size: 0.8rem; padding: 6px 12px; }
+  .btn-danger:hover { background: var(--accent); color: #fff; }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  .toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.3s; z-index: 999; }
+  .toast.show { transform: translateX(0); }
+
+  /* ── LİSTE ── */
+  .list-controls { max-width: 760px; margin: 0 auto 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .list-controls input { flex: 1; min-width: 180px; padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; background: #fff; outline: none; transition: border-color 0.2s; }
+  .list-controls input:focus { border-color: var(--accent); }
+  .list-controls select { padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; background: #fff; color: var(--text); outline: none; cursor: pointer; }
+  .count-badge { font-size: 0.82rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+  .lesson-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .lesson-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; border-left: 4px solid var(--accent); animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .lesson-card .meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tag { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 99px; background: #fff3ee; color: var(--accent); }
+  .tag.ders { background: #fff8e6; color: #b8860b; }
+  .lesson-card .subtitle { font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 6px; }
+  .lesson-card .detail { font-size: 0.9rem; color: #4a4540; line-height: 1.6; white-space: pre-wrap; }
+
+  .card-img { margin-top: 12px; }
+  .card-img img { max-width: 100%; max-height: 220px; border-radius: 8px; box-shadow: var(--shadow); cursor: pointer; transition: opacity 0.2s; }
+  .card-img img:hover { opacity: 0.88; }
+
+  .lesson-card .footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .lesson-card .date { font-size: 0.78rem; color: var(--muted); }
+  .card-actions { display: flex; gap: 6px; }
+  .empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 0.95rem; }
+  .empty .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+  /* ── LIGHTBOX ── */
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .lightbox-close { position: absolute; top: 18px; right: 22px; color: #fff; font-size: 2rem; cursor: pointer; font-weight: 800; line-height: 1; opacity: 0.8; }
+  .lightbox-close:hover { opacity: 1; }
+
+  /* ── TEKRAR ── */
+  .tekrar-wrap { max-width: 680px; margin: 0 auto; text-align: center; }
+  .tekrar-info { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+  .tekrar-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 36px 32px; margin-bottom: 20px; border-top: 5px solid var(--accent2); text-align: left; }
+  .tekrar-card .q-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent2); margin-bottom: 10px; }
+  .tekrar-card .q-text { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .tekrar-card .q-ders { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; }
+  .tekrar-card .q-img { display: none; margin-bottom: 16px; }
+  .tekrar-card .q-img.show { display: block; }
+  .tekrar-card .q-img img { max-width: 100%; max-height: 260px; border-radius: 8px; box-shadow: var(--shadow); cursor: pointer; }
+  .tekrar-card .answer-box { background: var(--bg); border-radius: 10px; padding: 16px 18px; font-size: 0.93rem; line-height: 1.65; color: #3a3530; display: none; white-space: pre-wrap; }
+  .tekrar-card .answer-box.show { display: block; }
+  .tekrar-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 6px; margin: 0 auto 24px; max-width: 300px; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.4s; }
+
+  /* ── İSTATİSTİK ── */
+  .stats-grid { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-box { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; text-align: center; }
+  .stat-box .num { font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+  .stat-box .lbl { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+  .ders-breakdown { max-width: 760px; margin: 0 auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
+  .ders-breakdown h3 { font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .ders-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .ders-row .ders-name { font-size: 0.88rem; font-weight: 700; width: 90px; flex-shrink: 0; }
+  .ders-bar-track { flex: 1; background: var(--border); border-radius: 99px; height: 10px; overflow: hidden; }
+  .ders-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.5s; }
+  .ders-row .ders-cnt { font-size: 0.82rem; color: var(--muted); width: 28px; text-align: right; }
+
+  @media (max-width: 480px) {
+    .row { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.5rem; }
+    .tekrar-card { padding: 24px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LGS <span>Öğrenilmiş Dersler</span> 📚</h1>
+  <p>Yanlışlardan öğrendiklerini not et ve tekrar et!</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('ekle')">✏️ Ders Ekle</button>
+  <button class="tab" onclick="switchTab('liste')">📋 Notlarım</button>
+  <button class="tab" onclick="switchTab('tekrar')">🔁 Tekrar</button>
+  <button class="tab" onclick="switchTab('istatistik')">📊 İstatistik</button>
+</div>
+
+<!-- EKLE -->
+<div id="view-ekle" class="view active">
+  <div class="form-card">
+    <h2>Yeni Ders Notu</h2>
+    <div class="field">
+      <label>Ders</label>
+      <select id="f-ders" onchange="dersSecildi()">
+        <option value="Matematik">Matematik</option>
+        <option value="Fen Bilimleri">Fen Bilimleri</option>
+        <option value="Türkçe">Türkçe</option>
+        <option value="İnkılap Tarihi">İnkılap Tarihi</option>
+        <option value="Din Kültürü">Din Kültürü</option>
+        <option value="İngilizce">İngilizce</option>
+      </select>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Ünite Adı</label>
+        <select id="f-unite" onchange="uniteSecildi()">
+          <option value="">— Ünite seç —</option>
+        </select>
+        <input type="text" id="f-unite-custom" placeholder="Kendi üniteni yaz..." style="display:none;margin-top:6px">
+      </div>
+      <div class="field">
+        <label>Alt Başlık / Konu</label>
+        <input type="text" id="f-alt" placeholder="örn. Eğik Düzlem">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ne Öğrendim?</label>
+      <textarea id="f-detay" placeholder="Neyi yanlış yaptım, doğrusu ne — buraya yaz..."></textarea>
+    </div>
+    <div class="field">
+      <label>Yanlış Soru Görseli <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.75rem">(opsiyonel)</span></label>
+      <div class="upload-area" id="upload-area" onclick="document.getElementById('f-gorsel').click()">
+        <input type="file" id="f-gorsel" accept="image/*" onchange="gorselSecildi(event)">
+        <div class="upload-label" id="upload-label">📎 &nbsp;Görsel ekle (jpg, png...)</div>
+        <div class="upload-preview" id="upload-preview" style="display:none">
+          <img id="preview-img" src="" alt="önizleme">
+          <button class="remove-img" onclick="gorselKaldir(event)">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="kaydet()">💾 Kaydet</button>
+      <button class="btn btn-secondary" onclick="temizle()">Temizle</button>
+    </div>
+  </div>
+</div>
+
+<!-- LİSTE -->
+<div id="view-liste" class="view">
+  <div class="list-controls">
+    <input type="text" id="search" placeholder="🔍 Ara..." oninput="renderListe()">
+    <select id="filter-ders" onchange="renderListe()">
+      <option value="">Tüm Dersler</option>
+      <option value="Matematik">Matematik</option>
+      <option value="Fen Bilimleri">Fen Bilimleri</option>
+      <option value="Türkçe">Türkçe</option>
+      <option value="İnkılap Tarihi">İnkılap Tarihi</option>
+      <option value="Din Kültürü">Din Kültürü</option>
+      <option value="İngilizce">İngilizce</option>
+    </select>
+    <span class="count-badge" id="count-label"></span>
+  </div>
+  <div class="lesson-list" id="lesson-list"></div>
+</div>
+
+<!-- TEKRAR -->
+<div id="view-tekrar" class="view">
+  <div class="tekrar-wrap">
+    <p class="tekrar-info">Kaydedilen notlarından rastgele kartlar gösterilir.</p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="tekrar-card" id="tekrar-card">
+      <div class="q-label">Soru</div>
+      <div class="q-text" id="t-unite">—</div>
+      <div class="q-ders" id="t-ders">—</div>
+      <div class="q-img" id="t-img">
+        <img id="t-img-el" src="" alt="soru görseli" onclick="lightboxAcSrc(this.src)">
+      </div>
+      <div class="answer-box" id="t-detay"></div>
+    </div>
+    <div class="tekrar-controls">
+      <button class="btn btn-secondary" onclick="toggleCevap()">👁 Cevabı Göster / Gizle</button>
+      <button class="btn btn-primary" onclick="sonraki()">Sonraki →</button>
+    </div>
+    <p id="tekrar-bitti" style="margin-top:20px;color:var(--green);font-weight:800;display:none;">🎉 Tebrikler, tüm kartları bitirdin!</p>
+  </div>
+</div>
+
+<!-- İSTATİSTİK -->
+<div id="view-istatistik" class="view">
+  <div class="stats-grid" id="stats-grid"></div>
+  <div class="ders-breakdown" id="ders-breakdown"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="lightboxKapat()">
+  <span class="lightbox-close">✕</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'lgs_dersler';
+let dersler = [];
+let tekrarSira = [];
+let tekrarIndex = 0;
+let editId = null;
+let pendingGorsel = null;
+
+// ── ÜNİTE VERİTABANI ──
+const LGS_UNITELER = {
+  'Matematik': [
+    'Çarpanlar ve Katlar',
+    'Üslü İfadeler',
+    'Kareköklü İfadeler',
+    'Veri Analizi',
+    'Basit Olayların Olma Olasılığı',
+    'Cebirsel İfadeler ve Özdeşlikler',
+    'Doğrusal Denklemler',
+    'Eşitsizlikler',
+    'Üçgenler',
+    'Eşlik ve Benzerlik',
+    'Dönüşüm Geometrisi',
+    'Geometrik Cisimler',
+  ],
+  'Fen Bilimleri': [
+    'Mevsimler ve İklim',
+    'DNA ve Genetik Kod',
+    'Basınç',
+    'Madde ve Endüstri',
+    'Basit Makineler',
+    'Enerji Dönüşümleri ve Çevre Bilimi',
+    'Elektrik Yükleri ve Elektrik Enerjisi',
+  ],
+  'Türkçe': [
+    'Sözcükte Anlam',
+    'Cümlede Anlam',
+    'Paragrafta Anlam',
+    'Söz Sanatları',
+    'Fiilimsiler',
+    'Fiilde Çatı',
+    'Cümlenin Ögeleri',
+    'Cümle Türleri',
+    'Yazım Kuralları',
+    'Noktalama İşaretleri',
+    'Anlatım Bozuklukları',
+    'Metin Türleri',
+    'Sözel Mantık / Görsel Okuma',
+  ],
+  'İnkılap Tarihi': [
+    'Bir Kahraman Doğuyor',
+    'Milli Uyanış: Bağımsızlık Yolunda Atılan Adımlar',
+    'Milli Bir Destan: "Ya İstiklal Ya Ölüm"',
+    'Atatürkçülük ve Çağdaşlaşan Türkiye',
+    'Demokratikleşme Çabaları',
+    'Atatürk Dönemi Türk Dış Politikası',
+    'Atatürk\'ün Ölümü ve Sonrası',
+  ],
+  'Din Kültürü': [
+    'Kader İnancı',
+    'Zekat ve Sadaka',
+    'Din ve Hayat',
+    'Hz. Muhammed\'in Örnekliği',
+    'Kur\'an-ı Kerim ve Özellikleri',
+  ],
+  'İngilizce': [
+    'Friendship',
+    'Teen Life',
+    'In The Kitchen',
+    'On the Phone',
+    'The Internet',
+    'Adventures',
+    'Tourism',
+    'Chores',
+    'Science',
+    'Natural Forces',
+  ],
+};
+
+// ── STORAGE ──
+function yukle() {
+  try { dersler = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { dersler = []; }
+}
+function kaydet_storage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dersler));
+}
+
+// ── TAB ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['ekle','liste','tekrar','istatistik'][i] === name);
+  });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (name === 'liste') renderListe();
+  if (name === 'tekrar') initTekrar();
+  if (name === 'istatistik') renderIstatistik();
+}
+
+// ── GÖRSEL ──
+function gorselSecildi(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingGorsel = ev.target.result;
+    document.getElementById('preview-img').src = pendingGorsel;
+    document.getElementById('upload-preview').style.display = 'inline-block';
+    const lbl = document.getElementById('upload-label');
+    lbl.textContent = '✅  ' + file.name;
+    lbl.classList.add('has-file');
+    document.getElementById('upload-area').classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+}
+
+function gorselKaldir(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  pendingGorsel = null;
+  document.getElementById('f-gorsel').value = '';
+  document.getElementById('upload-preview').style.display = 'none';
+  const lbl = document.getElementById('upload-label');
+  lbl.textContent = '📎 \u00a0Görsel ekle (jpg, png...)';
+  lbl.classList.remove('has-file');
+  document.getElementById('upload-area').classList.remove('has-file');
+}
+
+// ── FORM ──
+function dersSecildi() {
+  const ders = document.getElementById('f-ders').value;
+  const sel = document.getElementById('f-unite');
+  const uniteler = LGS_UNITELER[ders] || [];
+  sel.innerHTML = '<option value="">— Ünite seç —</option>';
+  uniteler.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    sel.appendChild(opt);
+  });
+  const diger = document.createElement('option');
+  diger.value = '__diger__'; diger.textContent = '✏️  Diğer / Manuel yaz...';
+  sel.appendChild(diger);
+  document.getElementById('f-unite-custom').style.display = 'none';
+}
+
+function uniteSecildi() {
+  const val = document.getElementById('f-unite').value;
+  document.getElementById('f-unite-custom').style.display = val === '__diger__' ? 'block' : 'none';
+}
+
+function kaydet() {
+  const ders = document.getElementById('f-ders').value.trim();
+  const uniteEl = document.getElementById('f-unite');
+  const customEl = document.getElementById('f-unite-custom');
+  const unite = (uniteEl.value === '__diger__' ? customEl.value : uniteEl.value).trim();
+  const alt = document.getElementById('f-alt').value.trim();
+  const detay = document.getElementById('f-detay').value.trim();
+
+  if (!unite || !detay) {
+    alert('Ünite adı ve "Ne Öğrendim?" alanını doldurman gerekiyor.');
+    return;
+  }
+
+  if (editId !== null) {
+    const idx = dersler.findIndex(d => d.id === editId);
+    if (idx !== -1) {
+      dersler[idx] = {
+        ...dersler[idx], ders, unite, alt, detay,
+        gorsel: pendingGorsel !== null ? pendingGorsel : dersler[idx].gorsel
+      };
+    }
+    editId = null;
+  } else {
+    dersler.push({
+      id: Date.now(),
+      ders, unite, alt, detay,
+      gorsel: pendingGorsel || null,
+      tarih: new Date().toLocaleDateString('tr-TR')
+    });
+  }
+
+  kaydet_storage();
+  temizle();
+  showToast('Kaydedildi!');
+}
+
+function temizle() {
+  document.getElementById('f-unite').value = '';
+  document.getElementById('f-unite-custom').value = '';
+  document.getElementById('f-unite-custom').style.display = 'none';
+  document.getElementById('f-alt').value = '';
+  document.getElementById('f-detay').value = '';
+  gorselKaldir(null);
+  editId = null;
+}
+
+function sil(id) {
+  if (!confirm('Bu notu silmek istiyor musun?')) return;
+  dersler = dersler.filter(d => d.id !== id);
+  kaydet_storage();
+  renderListe();
+}
+
+function duzenle(id) {
+  const d = dersler.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('f-ders').value = d.ders;
+  dersSecildi();
+  setTimeout(() => {
+    const sel = document.getElementById('f-unite');
+    const opts = Array.from(sel.options).map(o => o.value);
+    if (opts.includes(d.unite)) {
+      sel.value = d.unite;
+      document.getElementById('f-unite-custom').style.display = 'none';
+    } else {
+      sel.value = '__diger__';
+      document.getElementById('f-unite-custom').style.display = 'block';
+      document.getElementById('f-unite-custom').value = d.unite;
+    }
+  }, 0);
+  document.getElementById('f-alt').value = d.alt || '';
+  document.getElementById('f-detay').value = d.detay;
+  if (d.gorsel) {
+    pendingGorsel = d.gorsel;
+    document.getElementById('preview-img').src = d.gorsel;
+    document.getElementById('upload-preview').style.display = 'inline-block';
+    const lbl = document.getElementById('upload-label');
+    lbl.textContent = '✅  Mevcut görsel';
+    lbl.classList.add('has-file');
+    document.getElementById('upload-area').classList.add('has-file');
+  } else {
+    pendingGorsel = null;
+  }
+  editId = id;
+  switchTab('ekle');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── LİSTE ──
+function renderListe() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const fd = document.getElementById('filter-ders').value;
+  const filtered = dersler.filter(d => {
+    const text = (d.unite + d.alt + d.detay + d.ders).toLowerCase();
+    return (!q || text.includes(q)) && (!fd || d.ders === fd);
+  });
+
+  document.getElementById('count-label').textContent = filtered.length + ' not';
+  const el = document.getElementById('lesson-list');
+
+  if (filtered.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="icon">🗒️</div>Henüz not yok.<br>Yanlışlarını kaydedince burada görünecek!</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.slice().reverse().map(d => `
+    <div class="lesson-card">
+      <div class="meta">
+        <span class="tag ders">${d.ders}</span>
+        <span class="tag">${d.unite}</span>
+        ${d.alt ? `<span style="font-size:0.82rem;color:var(--muted)">${d.alt}</span>` : ''}
+      </div>
+      <div class="subtitle">${d.alt || d.unite}</div>
+      <div class="detail">${escHtml(d.detay)}</div>
+      ${d.gorsel ? `<div class="card-img"><img src="${d.gorsel}" alt="soru görseli" onclick="lightboxAcSrc('${d.id}')"></div>` : ''}
+      <div class="footer">
+        <span class="date">📅 ${d.tarih}${d.gorsel ? '&nbsp;·&nbsp;📷' : ''}</span>
+        <div class="card-actions">
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:0.8rem" onclick="duzenle(${d.id})">✏️ Düzenle</button>
+          <button class="btn btn-danger" onclick="sil(${d.id})">🗑 Sil</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ── LIGHTBOX ──
+function lightboxAcSrc(idOrSrc) {
+  let src = idOrSrc;
+  // id olarak gelirse integer'a çevir
+  const asNum = parseInt(idOrSrc);
+  if (!isNaN(asNum)) {
+    const d = dersler.find(x => x.id === asNum);
+    if (d && d.gorsel) src = d.gorsel;
+  }
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function lightboxKapat() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// ── TEKRAR ──
+function initTekrar() {
+  if (dersler.length === 0) {
+    document.getElementById('tekrar-card').innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">Henüz not eklemedin. Önce ders ekle!</div>`;
+    return;
+  }
+  tekrarSira = shuffle([...dersler]);
+  tekrarIndex = 0;
+  document.getElementById('tekrar-bitti').style.display = 'none';
+  goster();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function goster() {
+  if (tekrarIndex >= tekrarSira.length) {
+    document.getElementById('tekrar-bitti').style.display = 'block';
+    document.getElementById('t-unite').textContent = '—';
+    document.getElementById('t-ders').textContent = '';
+    document.getElementById('t-detay').textContent = '';
+    document.getElementById('t-detay').classList.remove('show');
+    document.getElementById('t-img').classList.remove('show');
+    updateProgress();
+    return;
+  }
+  const d = tekrarSira[tekrarIndex];
+  document.getElementById('t-unite').textContent = d.alt ? `${d.unite} › ${d.alt}` : d.unite;
+  document.getElementById('t-ders').textContent = d.ders;
+  document.getElementById('t-detay').textContent = d.detay;
+  document.getElementById('t-detay').classList.remove('show');
+  document.getElementById('tekrar-bitti').style.display = 'none';
+
+  const imgBox = document.getElementById('t-img');
+  const imgEl  = document.getElementById('t-img-el');
+  if (d.gorsel) {
+    imgEl.src = d.gorsel;
+    imgBox.classList.add('show');
+  } else {
+    imgEl.src = '';
+    imgBox.classList.remove('show');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = tekrarSira.length > 0 ? Math.round((tekrarIndex / tekrarSira.length) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+function toggleCevap() { document.getElementById('t-detay').classList.toggle('show'); }
+function sonraki() { tekrarIndex++; goster(); }
+
+// ── İSTATİSTİK ──
+function renderIstatistik() {
+  const toplam = dersler.length;
+  const dersAdlari = ['Matematik','Fen Bilimleri','Türkçe','İnkılap Tarihi','Din Kültürü','İngilizce'];
+  const sayim = {};
+  dersAdlari.forEach(d => sayim[d] = 0);
+  dersler.forEach(d => { if (sayim[d.ders] !== undefined) sayim[d.ders]++; });
+  const gorselSayisi = dersler.filter(d => d.gorsel).length;
+  const enFazla = Object.entries(sayim).sort((a,b) => b[1]-a[1])[0];
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-box"><div class="num">${toplam}</div><div class="lbl">Toplam Not</div></div>
+    <div class="stat-box"><div class="num">${dersAdlari.filter(d => sayim[d] > 0).length}</div><div class="lbl">Farklı Ders</div></div>
+    <div class="stat-box"><div class="num">${gorselSayisi}</div><div class="lbl">Görsel Ekli</div></div>
+  `;
+  const max = Math.max(...Object.values(sayim), 1);
+  document.getElementById('ders-breakdown').innerHTML = `
+    <h3>Derse Göre Dağılım</h3>
+    ${dersAdlari.map(d => `
+      <div class="ders-row">
+        <span class="ders-name">${d.split(' ')[0]}</span>
+        <div class="ders-bar-track"><div class="ders-bar-fill" style="width:${Math.round(sayim[d]/max*100)}%"></div></div>
+        <span class="ders-cnt">${sayim[d]}</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✅ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── BAŞLAT ──
+yukle();
+dersSecildi();
+</script>
+</body>
+</html>
