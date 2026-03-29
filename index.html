@@ -445,7 +445,7 @@ window.duzenle = function(firestoreId) {
 };
 
 // ── LİSTE ──
-function renderListe() {
+window.renderListe = function renderListe() {
   const q2 = document.getElementById('search').value.toLowerCase();
   const fd = document.getElementById('filter-ders').value;
   const filtered = dersler.filter(d => {
@@ -494,7 +494,7 @@ window.lightboxAcSrc = function(prefix, firestoreId) {
 window.lightboxKapat = function() { document.getElementById('lightbox').classList.remove('open'); };
 
 // ── TEKRAR ──
-function initTekrar() {
+window.initTekrar = function initTekrar() {
   if (dersler.length === 0) {
     document.getElementById('tekrar-card').innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">Henüz not eklemedin. Önce ders ekle!</div>`;
     return;
@@ -541,7 +541,7 @@ window.toggleCevap = function() { document.getElementById('t-detay').classList.t
 window.sonraki = function() { tekrarIndex++; goster(); };
 
 // ── İSTATİSTİK ──
-function renderIstatistik() {
+window.renderIstatistik = function renderIstatistik() {
   const toplam = dersler.length;
   const dersAdlari = ['Matematik','Fen Bilimleri','Türkçe','İnkılap Tarihi','Din Kültürü','İngilizce'];
   const sayim = {}; dersAdlari.forEach(d => sayim[d] = 0);
