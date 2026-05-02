@@ -93,6 +93,11 @@ body {
 .kpi-trend.dn { color: var(--danger); }
 .kpi-accent { border-top: 3px solid var(--accent); }
 .kpi-blue { border-top: 3px solid #2563eb; }
+.kpi-green { border-top: 3px solid var(--accent); }
+.kpi-sky { border-top: 3px solid #2563eb; }
+.kpi-purple { border-top: 3px solid #7c3aed; }
+.kpi-orange { border-top: 3px solid #ea580c; }
+.kpi-neutral { border-top: 3px solid var(--border2); }
 
 /* ─── Chart section ──────────────────────── */
 .charts-row {
@@ -330,6 +335,54 @@ tbody tr:hover td { background: var(--surface2); }
   background: var(--surface); color: var(--text); width: 200px;
 }
 .search-input:focus { outline: none; border-color: var(--accent); }
+
+
+/* ─── Mobile exam cards ─────────────────── */
+.mobile-card-list { display: none; padding: 12px; background: var(--surface2); }
+.exam-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 12px 10px;
+  box-shadow: var(--shadow); margin-bottom: 10px;
+}
+.exam-card:last-child { margin-bottom: 0; }
+.exam-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.exam-card-left { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+.exam-card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.25; }
+.exam-card-sub { font-size: 11px; color: var(--text3); margin-top: 2px; white-space: nowrap; }
+.exam-card-name { font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 6px 0 10px; }
+.exam-card-scores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.exam-score {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 8px; background: var(--surface2);
+}
+.exam-score-name { font-size: 10.5px; color: var(--text3); font-weight: 600; margin-bottom: 3px; }
+.exam-score-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; }
+.exam-score-dyb { font-size: 10.5px; color: var(--text3); margin-top: 2px; white-space: nowrap; }
+.exam-card-summary {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+}
+.exam-summary-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px; }
+.exam-summary-label { font-size: 10.5px; color: var(--text3); font-weight: 600; margin-bottom: 3px; }
+.exam-summary-val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 600; }
+
+@media(max-width:760px){
+  .app { padding: 20px 12px 48px; }
+  .app-title { font-size: 22px; }
+  .table-header { padding: 14px 12px; align-items: stretch; }
+  .table-header > div { width: 100%; }
+  .search-input { width: 100%; }
+  .table-scroll { display: none; }
+  .mobile-card-list { display: block; }
+  .tab-bar { width: 100%; }
+  .tab { flex: 1; text-align: center; }
+  .charts-row .panel { padding: 16px 12px 12px; }
+}
+
+@media(max-width:420px){
+  .exam-card-scores { grid-template-columns: 1fr; }
+  .exam-card-summary { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -420,6 +473,7 @@ tbody tr:hover td { background: var(--surface2); }
         <tbody id="sinav-tbody"></tbody>
       </table>
     </div>
+    <div class="mobile-card-list" id="mobile-card-list"></div>
   </div>
 </div>
 
@@ -741,25 +795,25 @@ function renderKPI(){
   }
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card kpi-accent">
+    <div class="kpi-card kpi-green">
       <div class="kpi-label">Son sınav puanı</div>
       <div class="kpi-val" style="color:${puanColor(sonPuan)}">${fmtPuan(sonPuan)}</div>
       ${trendHtml}
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card kpi-sky">
       <div class="kpi-label">Son sınav net</div>
       <div class="kpi-val" style="color:${netColor(sonNet, TOPLAM_SORU)}">${fmtNet(sonNet)}</div>
       <div class="kpi-trend">${TOPLAM_SORU} sorudan</div>
     </div>
-    <div class="kpi-card kpi-blue">
+    <div class="kpi-card kpi-purple">
       <div class="kpi-label">Genel puan ort.</div>
       <div class="kpi-val" style="color:${puanColor(genelOrt)}">${fmtPuan(genelOrt)}</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card kpi-orange">
       <div class="kpi-label">En yüksek puan</div>
       <div class="kpi-val" style="color:${puanColor(enYuksek)}">${fmtPuan(enYuksek)}</div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card kpi-neutral">
       <div class="kpi-label">Toplam sınav</div>
       <div class="kpi-val">${liste.length}</div>
     </div>
@@ -838,6 +892,21 @@ function renderDersChart(){
   });
 }
 
+
+function ayKisa(tarih){
+  const aylar = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const m = parseInt(String(tarih).slice(5,7), 10);
+  return aylar[(m || 1) - 1] || '';
+}
+
+function ayEkseniEtiketi(labels, index){
+  const tarih = labels[index];
+  if(!tarih){ return ''; }
+  const ay = String(tarih).slice(0,7);
+  const onceki = index > 0 ? String(labels[index-1]).slice(0,7) : '';
+  return index === 0 || ay !== onceki ? ayKisa(tarih) : '';
+}
+
 function renderTrendChart(){
   const ctx = document.getElementById('trendChart').getContext('2d');
   if(trendChartInst){ trendChartInst.destroy(); }
@@ -887,7 +956,7 @@ function renderTrendChart(){
           }}
         },
         scales:{
-          x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{family:'DM Mono',size:10}}},
+          x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,minRotation:0,font:{family:'DM Mono',size:10}, callback:(value,index)=>ayEkseniEtiketi(labels,index)}},
           y:{grid:{color:'rgba(0,0,0,0.05)'},min:seciliDers.soru === 20 ? 14 : 7,max:seciliDers.soru,
              ticks:{font:{family:'DM Mono',size:11}, callback:v=>fmtNet(v)}}
         }
@@ -927,7 +996,7 @@ function renderTrendChart(){
         }}
       },
       scales:{
-        x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{family:'DM Mono',size:10}}},
+        x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,minRotation:0,font:{family:'DM Mono',size:10}, callback:(value,index)=>ayEkseniEtiketi(labels,index)}},
         y:{grid:{color:'rgba(0,0,0,0.05)'},min:420,max:500,
            ticks:{font:{family:'DM Mono',size:11}, callback:v=>fmtPuan(v)}}
       }
@@ -990,8 +1059,55 @@ function renderTable(){
     </tr>`;
   }).join('');
 
+  const mobileCards = liste.map(s=>{
+    const tn = toplamNet(s);
+    const p  = puan(s);
+    const turText = normalizeTur(s.sinavTur);
+    const turSlug = turText==='Bireysel'?'bireysel':turText==='Okul'?'okul':'meb';
+    const dersHtml = DERSLER.map(dr=>{
+      const obj = s[dr.key] || {d:0,y:0,b:0};
+      const n = net(obj);
+      const renk = netColor(n, dr.soru);
+      return `<div class="exam-score">
+        <div class="exam-score-name">${dr.ad}</div>
+        <div class="exam-score-val" style="color:${renk}">${fmtNet(n)}</div>
+        <div class="exam-score-dyb">D:${fmtInt(obj.d)} · Y:${fmtInt(obj.y)} · B:${fmtInt(obj.b)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="exam-card">
+      <div class="exam-card-head">
+        <div class="exam-card-left">
+          <input type="checkbox" class="row-check" aria-label="Sınav seç" ${seciliNo===s.no?'checked':''} onchange="setSeciliSinav(${s.no}, this.checked)">
+          <div style="min-width:0">
+            <div class="exam-card-title">#${s.no} · ${s.tarih}</div>
+            <div class="exam-card-sub">Sınav No: ${s.sinavNo ?? '-'}</div>
+          </div>
+        </div>
+        <span class="badge badge-${turSlug}">${turText}</span>
+      </div>
+      <div class="exam-card-name">${s.yayinevi}</div>
+      <div class="exam-card-scores">${dersHtml}</div>
+      <div class="exam-card-summary">
+        <div class="exam-summary-box">
+          <div class="exam-summary-label">Toplam Net</div>
+          <div class="exam-summary-val" style="color:${netColor(tn, TOPLAM_SORU)}">${fmtNet(tn)}</div>
+          <div class="exam-score-dyb">D:${toplamDogru(s)} · Y:${toplamYanlis(s)} · B:${toplamBos(s)}</div>
+        </div>
+        <div class="exam-summary-box">
+          <div class="exam-summary-label">Puan</div>
+          <div class="exam-summary-val" style="color:${puanColor(p)}">${fmtPuan(p)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
   document.getElementById('sinav-tbody').innerHTML = rows ||
     `<tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text3)">Kayıt bulunamadı</td></tr>`;
+  const mobileList = document.getElementById('mobile-card-list');
+  if(mobileList){
+    mobileList.innerHTML = mobileCards ||
+      `<div style="text-align:center;padding:18px;color:var(--text3);font-size:13px">Kayıt bulunamadı</div>`;
+  }
   updateTableActions();
 }
 
