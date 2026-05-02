@@ -524,7 +524,118 @@ tbody tr:hover td { background: var(--surface2); }
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
+// ──────────────────────────────────────
+// FIREBASE AYARLARI
+// ──────────────────────────────────────
+// GitHub Pages üzerinde kalıcı kayıt için Firebase Console'dan aldığınız web app config bilgilerini buraya girin.
+// Bu alan doldurulmazsa sayfa mevcut statik veriyle çalışır; yeni kayıtlar sayfa yenilenince kalıcı olmaz.
+const FIREBASE_CONFIG = {
+  apiKey: "BURAYA_API_KEY",
+  authDomain: "BURAYA_PROJECT_ID.firebaseapp.com",
+  projectId: "BURAYA_PROJECT_ID",
+  storageBucket: "BURAYA_PROJECT_ID.appspot.com",
+  messagingSenderId: "BURAYA_MESSAGING_SENDER_ID",
+  appId: "BURAYA_APP_ID"
+};
+const FIREBASE_COLLECTION = 'lgs_sinavlar';
+let db = null;
+let firebaseAktif = false;
+
+function firebaseConfigGirildi(){
+  return FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && !String(FIREBASE_CONFIG.projectId).includes('BURAYA');
+}
+
+function initFirebase(){
+  if(!firebaseConfigGirildi()){
+    return false;
+  }
+  if(typeof firebase === 'undefined'){
+    console.warn('Firebase SDK yüklenemedi. Sayfa statik veriyle çalışıyor.');
+    return false;
+  }
+  if(!firebase.apps.length){
+    firebase.initializeApp(FIREBASE_CONFIG);
+  }
+  db = firebase.firestore();
+  firebaseAktif = true;
+  return true;
+}
+
+function firebaseTemizKayit(s){
+  const temiz = {
+    no: Number(s.no)||0,
+    sinavNo: s.sinavNo === '' || s.sinavNo === undefined || s.sinavNo === null ? '' : Number(s.sinavNo),
+    tarih: s.tarih || '',
+    sinavTur: normalizeTur(s.sinavTur || s.tur || 'Bireysel'),
+    yayinevi: s.yayinevi || '',
+    mat: {...s.mat}, fen: {...s.fen}, tur: {...s.tur}, ink: {...s.ink}, din: {...s.din}, ing: {...s.ing},
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  return temiz;
+}
+
+async function firebaseVerileriYukle(){
+  if(!initFirebase()){
+    return false;
+  }
+  try{
+    const snap = await db.collection(FIREBASE_COLLECTION).orderBy('tarih','asc').get();
+    if(snap.empty){
+      // İlk kurulum kolaylığı: Firebase boşsa HTML içindeki mevcut sınav listesini bir defa Firestore'a aktarır.
+      const batch = db.batch();
+      veri.forEach(s=>{
+        const ref = db.collection(FIREBASE_COLLECTION).doc();
+        s.firebaseId = ref.id;
+        batch.set(ref, firebaseTemizKayit(s));
+      });
+      await batch.commit();
+      return true;
+    }
+    veri = snap.docs.map(doc=>{
+      const d = doc.data();
+      return {
+        firebaseId: doc.id,
+        no: Number(d.no)||0,
+        sinavNo: d.sinavNo ?? '',
+        tarih: d.tarih || '',
+        sinavTur: normalizeTur(d.sinavTur || 'Bireysel'),
+        yayinevi: d.yayinevi || '',
+        mat: d.mat || {d:0,y:0,b:0},
+        fen: d.fen || {d:0,y:0,b:0},
+        tur: d.tur || {d:0,y:0,b:0},
+        ink: d.ink || {d:0,y:0,b:0},
+        din: d.din || {d:0,y:0,b:0},
+        ing: d.ing || {d:0,y:0,b:0},
+      };
+    });
+    return true;
+  }catch(err){
+    console.error('Firebase veri okuma hatası:', err);
+    alert('Firebase bağlantısı kurulamadı. Sayfa mevcut statik veriyle açıldı. Firebase ayarlarını ve Firestore kurallarını kontrol edin.');
+    firebaseAktif = false;
+    return false;
+  }
+}
+
+async function firebaseKaydiKaydet(kayit){
+  if(!firebaseAktif || !db){ return; }
+  const temiz = firebaseTemizKayit(kayit);
+  if(kayit.firebaseId){
+    await db.collection(FIREBASE_COLLECTION).doc(kayit.firebaseId).set(temiz, {merge:true});
+  }else{
+    const ref = await db.collection(FIREBASE_COLLECTION).add(temiz);
+    kayit.firebaseId = ref.id;
+  }
+}
+
+async function firebaseKaydiSil(kayit){
+  if(!firebaseAktif || !db || !kayit?.firebaseId){ return; }
+  await db.collection(FIREBASE_COLLECTION).doc(kayit.firebaseId).delete();
+}
+
 // ──────────────────────────────────────
 // DERS TANIMLAMALARI
 // ──────────────────────────────────────
@@ -1233,7 +1344,7 @@ function handleOverlayClick(e){
   if(e.target === document.getElementById('modal-overlay')) closeModal();
 }
 
-function kaydet(){
+async function kaydet(){
   const tarih = document.getElementById('f-tarih').value;
   const tur   = document.getElementById('f-tur').value;
   const sinavNoInput = document.getElementById('f-sinav-no').value;
@@ -1264,15 +1375,28 @@ function kaydet(){
 
   if(!hedef){ veri.push(kayit); }
   siralaVeNumaralandir();
+  try{
+    await firebaseKaydiKaydet(kayit);
+  }catch(err){
+    console.error('Firebase kayıt hatası:', err);
+    alert('Kayıt ekranda güncellendi ancak Firebase üzerine kaydedilemedi. Bağlantı ve Firestore izinlerini kontrol edin.');
+  }
   closeModal();
   render();
 }
 
-function silSinav(no){
+async function silSinav(no){
   const kayit = veri.find(s=>s.no === no);
   if(!kayit){ return; }
   const ad = kayit.yayinevi || 'Bu sınav';
   if(!confirm(`${kayit.tarih} tarihli "${ad}" kaydı silinsin mi?`)){ return; }
+  try{
+    await firebaseKaydiSil(kayit);
+  }catch(err){
+    console.error('Firebase silme hatası:', err);
+    alert('Kayıt Firebase üzerinden silinemedi. Bağlantı ve Firestore izinlerini kontrol edin.');
+    return;
+  }
   veri = veri.filter(s=>s.no !== no);
   if(seciliNo === no){ seciliNo = null; }
   siralaVeNumaralandir();
@@ -1282,8 +1406,12 @@ function silSinav(no){
 // ──────────────────────────────────────
 // BAŞLAT
 // ──────────────────────────────────────
-siralaVeNumaralandir();
-render();
+async function baslat(){
+  await firebaseVerileriYukle();
+  siralaVeNumaralandir();
+  render();
+}
+baslat();
 </script>
 </body>
 </html>
