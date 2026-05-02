@@ -3,577 +3,1171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LGS – Öğrenilmiş Dersler</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<title>LGS Deneme Takibi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  :root {
-    --bg: #f7f5f0; --card: #ffffff; --accent: #e85d26; --accent2: #f7b731;
-    --text: #1e1b18; --muted: #888070; --border: #e8e4dc; --green: #2eab6e;
-    --shadow: 0 2px 12px rgba(0,0,0,0.07); --radius: 14px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 60px; }
-  header { text-align: center; margin-bottom: 32px; }
-  header h1 { font-family: 'Lora', serif; font-size: 2rem; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
-  header h1 span { color: var(--accent); font-style: italic; }
-  header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+:root {
+  --bg: #f4f2ee;
+  --surface: #ffffff;
+  --surface2: #f9f8f5;
+  --border: #e4e0d8;
+  --border2: #d0ccc2;
+  --text: #1a1916;
+  --text2: #6b6760;
+  --text3: #9e9a94;
+  --accent: #2d6a4f;
+  --accent-light: #e8f5ee;
+  --accent2: #1a3c5e;
+  --accent2-light: #e6eef5;
+  --warn: #92400e;
+  --warn-light: #fef3c7;
+  --danger: #7f1d1d;
+  --danger-light: #fee2e2;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+}
 
-  .sync-bar { max-width: 680px; margin: -16px auto 20px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 0.8rem; color: var(--muted); }
-  .sync-dot { width: 8px; height: 8px; border-radius: 99px; background: var(--border); flex-shrink: 0; }
-  .sync-dot.ok { background: var(--green); }
-  .sync-dot.loading { background: var(--accent2); animation: pulse 1s infinite; }
-  .sync-dot.err { background: var(--accent); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 28px; flex-wrap: wrap; }
-  .tab { padding: 8px 20px; border-radius: 99px; border: 2px solid var(--border); background: var(--card); cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--muted); transition: all 0.2s; }
-  .tab:hover { border-color: var(--accent); color: var(--accent); }
-  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-  .view { display: none; }
-  .view.active { display: block; }
+/* ─── Layout ─────────────────────────────── */
+.app { max-width: 1320px; margin: 0 auto; padding: 32px 24px 64px; }
 
-  .form-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; max-width: 680px; margin: 0 auto; }
-  .form-card h2 { font-size: 1.05rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-  .form-card h2::before { content: '✏️'; font-size: 1.2rem; }
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
-  .field input, .field select, .field textarea { width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.2s; }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
-  .field textarea { resize: vertical; min-height: 100px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* ─── Header ─────────────────────────────── */
+.app-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+}
+.app-title { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+.app-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
 
-  .upload-area { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: var(--bg); }
-  .upload-area:hover { border-color: var(--accent); background: #fff8f5; }
-  .upload-area.has-file { border-color: var(--green); background: #f0fff8; }
-  .upload-area input[type="file"] { display: none; }
-  .upload-label { font-size: 0.88rem; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .upload-label.has-file { color: var(--green); font-weight: 700; }
-  .upload-preview { margin-top: 10px; position: relative; display: inline-block; }
-  .upload-preview img { max-width: 100%; max-height: 180px; border-radius: 8px; box-shadow: var(--shadow); }
-  .remove-img { position: absolute; top: -8px; right: -8px; background: var(--accent); color: #fff; border: none; border-radius: 99px; width: 22px; height: 22px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+/* ─── Buttons ────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; border: none;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #215c41; }
+.btn-ghost {
+  background: transparent; color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+.btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; }
+.btn-danger:hover { background: #fecaca; }
 
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 24px; border-radius: 10px; border: none; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.92rem; cursor: pointer; transition: all 0.18s; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #c94e1d; transform: translateY(-1px); }
-  .btn-secondary { background: var(--bg); color: var(--muted); border: 2px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: #fff0ee; color: var(--accent); border: 2px solid #fdd; font-size: 0.8rem; padding: 6px 12px; }
-  .btn-danger:hover { background: var(--accent); color: #fff; }
-  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+/* ─── KPI Cards ──────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.4s ease both;
+}
+.kpi-card:nth-child(1){animation-delay:0.05s}
+.kpi-card:nth-child(2){animation-delay:0.1s}
+.kpi-card:nth-child(3){animation-delay:0.15s}
+.kpi-card:nth-child(4){animation-delay:0.2s}
+.kpi-card:nth-child(5){animation-delay:0.25s}
+.kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 8px; }
+.kpi-val { font-size: 28px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; letter-spacing: -1px; }
+.kpi-trend { font-size: 11px; margin-top: 4px; color: var(--text3); }
+.kpi-trend.up { color: var(--accent); }
+.kpi-trend.dn { color: var(--danger); }
+.kpi-accent { border-top: 3px solid var(--accent); }
+.kpi-blue { border-top: 3px solid #2563eb; }
 
-  .toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.3s; z-index: 999; }
-  .toast.show { transform: translateX(0); }
+/* ─── Chart section ──────────────────────── */
+.charts-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 20px;
+}
+@media(max-width:760px){ .charts-row { grid-template-columns: 1fr; } }
 
-  .list-controls { max-width: 760px; margin: 0 auto 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .list-controls input { flex: 1; min-width: 180px; padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; background: #fff; outline: none; transition: border-color 0.2s; }
-  .list-controls input:focus { border-color: var(--accent); }
-  .list-controls select { padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; background: #fff; color: var(--text); outline: none; cursor: pointer; }
-  .count-badge { font-size: 0.82rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 20px 16px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.4s ease 0.25s both;
+}
+.panel-title {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.panel-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.chart-wrap { position: relative; width: 100%; }
+.panel-title-select { justify-content: space-between; gap: 12px; }
+.panel-title-main { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.chart-select {
+  padding: 5px 8px; border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); background: var(--surface);
+  color: var(--text2); font-family: inherit; font-size: 11px;
+  font-weight: 500; max-width: 150px;
+}
+.chart-select:focus { outline: none; border-color: var(--accent); }
 
-  .lesson-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-  .lesson-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 22px; border-left: 4px solid var(--accent); animation: fadeIn 0.25s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .lesson-card .meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-  .tag { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 99px; background: #fff3ee; color: var(--accent); }
-  .tag.ders { background: #fff8e6; color: #b8860b; }
-  .lesson-card .subtitle { font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 6px; }
-  .lesson-card .detail { font-size: 0.9rem; color: #4a4540; line-height: 1.6; white-space: pre-wrap; }
-  .card-img { margin-top: 12px; }
-  .card-img img { max-width: 100%; max-height: 220px; border-radius: 8px; box-shadow: var(--shadow); cursor: pointer; transition: opacity 0.2s; }
-  .card-img img:hover { opacity: 0.88; }
-  .lesson-card .footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .lesson-card .date { font-size: 0.78rem; color: var(--muted); }
-  .card-actions { display: flex; gap: 6px; }
-  .empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 0.95rem; }
-  .empty .icon { font-size: 2.5rem; margin-bottom: 12px; }
+/* ─── Tabs ───────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;
+  background: var(--surface2); padding: 4px; border-radius: var(--radius-sm);
+  width: fit-content;
+}
+.tab {
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  background: transparent; border: none; color: var(--text2);
+  font-family: inherit; transition: all 0.15s;
+}
+.tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tab:hover:not(.active) { color: var(--text); }
 
-  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
-  .lightbox.open { display: flex; }
-  .lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 10px; }
-  .lightbox-close { position: absolute; top: 18px; right: 22px; color: #fff; font-size: 2rem; cursor: pointer; font-weight: 800; }
+/* ─── Table section ──────────────────────── */
+.table-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: fadeUp 0.4s ease 0.3s both;
+}
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
+}
+.table-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.table-scroll { overflow-x: visible; }
 
-  .tekrar-wrap { max-width: 680px; margin: 0 auto; text-align: center; }
-  .tekrar-info { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
-  .tekrar-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 36px 32px; margin-bottom: 20px; border-top: 5px solid var(--accent2); text-align: left; }
-  .tekrar-card .q-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent2); margin-bottom: 10px; }
-  .tekrar-card .q-text { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .tekrar-card .q-ders { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; }
-  .tekrar-card .q-img { display: none; margin-bottom: 16px; }
-  .tekrar-card .q-img.show { display: block; }
-  .tekrar-card .q-img img { max-width: 100%; max-height: 260px; border-radius: 8px; box-shadow: var(--shadow); cursor: pointer; }
-  .tekrar-card .answer-box { background: var(--bg); border-radius: 10px; padding: 16px 18px; font-size: 0.93rem; line-height: 1.65; color: #3a3530; display: none; white-space: pre-wrap; }
-  .tekrar-card .answer-box.show { display: block; }
-  .tekrar-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
-  .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 6px; margin: 0 auto 24px; max-width: 300px; }
-  .progress-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.4s; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+th {
+  padding: 9px 9px; text-align: left;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+td { padding: 9px 9px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+.mono { font-family: 'DM Mono', monospace; }
+.table-date { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2); white-space: nowrap; }
+.score-cell { min-width: 60px; }
+.select-col { width: 34px; min-width: 34px; text-align: center; }
+.row-check { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.table-actions { display: none; align-items: center; gap: 6px; }
+.table-actions.open { display: inline-flex; }
+.table-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text2); cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500;
+}
+.table-action-btn:hover { background: var(--surface); color: var(--text); }
+.table-action-btn.delete:hover { background: var(--danger-light); color: var(--danger); border-color: #fca5a5; }
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); cursor: pointer; transition: all 0.15s;
+  margin-right: 4px; font-family: inherit; font-size: 12px;
+}
+.icon-btn:hover { background: var(--surface2); color: var(--text); }
+.icon-btn.delete:hover { background: var(--danger-light); color: var(--danger); border-color: #fca5a5; }
 
-  .stats-grid { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
-  .stat-box { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; text-align: center; }
-  .stat-box .num { font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-  .stat-box .lbl { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
-  .ders-breakdown { max-width: 760px; margin: 0 auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
-  .ders-breakdown h3 { font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .ders-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .ders-row .ders-name { font-size: 0.88rem; font-weight: 700; width: 90px; flex-shrink: 0; }
-  .ders-bar-track { flex: 1; background: var(--border); border-radius: 99px; height: 10px; overflow: hidden; }
-  .ders-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.5s; }
-  .ders-row .ders-cnt { font-size: 0.82rem; color: var(--muted); width: 28px; text-align: right; }
+.score-net { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; line-height: 1.15; }
+.score-dyb { font-family: 'DM Sans', sans-serif; font-size: 10.5px; color: var(--text3); margin-top: 2px; white-space: nowrap; }
+.score-dyb span { margin-right: 4px; }
+.score-dyb.total { margin-top: 3px; }
 
-  @media (max-width: 480px) {
-    .row { grid-template-columns: 1fr; }
-    header h1 { font-size: 1.5rem; }
-    .tekrar-card { padding: 24px 18px; }
-  }
+/* ─── Badges ─────────────────────────────── */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+.badge-bireysel { background: var(--accent-light); color: var(--accent); }
+.badge-okul { background: var(--accent2-light); color: var(--accent2); }
+.badge-meb { background: var(--warn-light); color: var(--warn); }
+
+/* ─── Net cell colors ────────────────────── */
+.net-hi { color: var(--accent); font-weight: 600; }
+.net-lo { color: var(--danger); }
+.net-mid { color: var(--text); }
+
+/* ─── Modal ──────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); z-index: 200;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 28px; width: min(620px, 95vw);
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-md);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn { from { transform: translateY(12px); opacity:0; } to { transform:none; opacity:1; } }
+.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-full { grid-column: 1/-1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); }
+.form-group input, .form-group select {
+  padding: 8px 10px; border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); font-family: inherit; font-size: 13px;
+  background: var(--surface); color: var(--text);
+  transition: border-color 0.15s;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+.ders-section { margin-top: 18px; }
+.ders-section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text3); margin-bottom: 10px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.ders-grid {
+  display: grid; grid-template-columns: 140px repeat(3,1fr) 80px;
+  gap: 0; font-size: 12px;
+}
+.ders-grid-head {
+  display: contents;
+}
+.ders-grid-head > span {
+  padding: 6px 8px; background: var(--surface2);
+  border: 1px solid var(--border); font-weight: 600;
+  color: var(--text3); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
+}
+.ders-grid-head > span:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.ders-grid-head > span:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+.ders-row-g {
+  display: contents;
+}
+.ders-row-g > * {
+  padding: 6px 8px; border: 1px solid var(--border); border-top: none;
+}
+.ders-row-g .ders-name-cell {
+  font-weight: 500; display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); font-size: 12px;
+}
+.ders-color-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ders-row-g input {
+  border: none; border-left: 1px solid var(--border); width: 100%;
+  padding: 6px 8px; font-family: 'DM Mono', monospace; font-size: 13px;
+  background: var(--surface); color: var(--text); text-align: center;
+}
+.ders-row-g input:focus { outline: none; background: #f0fdf4; }
+.ders-net-cell {
+  font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600;
+  text-align: center; background: var(--surface2); color: var(--accent);
+}
+@media(max-width:520px){
+  .ders-grid { grid-template-columns: 120px repeat(3,1fr) 70px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+.modal-footer {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+
+/* ─── Legend ─────────────────────────────── */
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+.legend-sq { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ─── Animations ─────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ─── Ders performans highlight bar ─────── */
+.perf-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.perf-bar-bg { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.perf-bar-fill { height: 100%; border-radius: 3px; }
+.perf-val { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; min-width: 36px; text-align: right; }
+
+/* ─── Ders avg table ─────────────────────── */
+.ders-avg-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+.ders-avg-card {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 14px; background: var(--surface2);
+}
+.ders-avg-name { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.ders-avg-val { font-size: 22px; font-weight: 600; font-family: 'DM Mono', monospace; }
+.ders-avg-max { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ─── Responsive helpers ─────────────────── */
+.hide-sm { }
+@media(max-width:640px){ .hide-sm { display: none !important; } }
+
+/* ─── Search input ───────────────────────── */
+.search-input {
+  padding: 7px 12px; border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); font-family: inherit; font-size: 13px;
+  background: var(--surface); color: var(--text); width: 200px;
+}
+.search-input:focus { outline: none; border-color: var(--accent); }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>LGS <span>Öğrenilmiş Dersler</span> 📚</h1>
-  <p>Yanlışlardan öğrendiklerini not et ve tekrar et!</p>
-</header>
+<div class="app">
 
-<div class="sync-bar">
-  <div class="sync-dot loading" id="sync-dot"></div>
-  <span id="sync-label">Bağlanıyor...</span>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('ekle')">✏️ Ders Ekle</button>
-  <button class="tab" onclick="switchTab('liste')">📋 Notlarım</button>
-  <button class="tab" onclick="switchTab('tekrar')">🔁 Tekrar</button>
-  <button class="tab" onclick="switchTab('istatistik')">📊 İstatistik</button>
-</div>
-
-<!-- EKLE -->
-<div id="view-ekle" class="view active">
-  <div class="form-card">
-    <h2>Yeni Ders Notu</h2>
-    <div class="field">
-      <label>Ders</label>
-      <select id="f-ders" onchange="dersSecildi()">
-        <option value="Matematik">Matematik</option>
-        <option value="Fen Bilimleri">Fen Bilimleri</option>
-        <option value="Türkçe">Türkçe</option>
-        <option value="İnkılap Tarihi">İnkılap Tarihi</option>
-        <option value="Din Kültürü">Din Kültürü</option>
-        <option value="İngilizce">İngilizce</option>
-      </select>
+  <!-- Header -->
+  <div class="app-header">
+    <div>
+      <div class="app-title">📊 LGS Deneme Takibi</div>
+      <div class="app-sub" id="app-sub">Yükleniyor...</div>
     </div>
-    <div class="row">
-      <div class="field">
-        <label>Ünite Adı</label>
-        <select id="f-unite" onchange="uniteSecildi()">
-          <option value="">— Ünite seç —</option>
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Yeni Sınav
+    </button>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <!-- Charts row -->
+  <div class="charts-row">
+    <div class="panel">
+      <div class="panel-title"><span class="dot"></span>Ders bazında ağırlıklı net ort.</div>
+      <div class="chart-wrap" style="height:320px"><canvas id="dersChart"></canvas></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">Son 14 sınava ağırlık uygulandı; ilk kayıtlarda mevcut sınav sayısına göre normalize edilir</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title panel-title-select">
+        <span class="panel-title-main"><span class="dot" style="background:#2563eb"></span><span id="trend-title">Ağırlıklı puan ortalaması</span></span>
+        <select class="chart-select" id="trend-mode" onchange="setTrendMode(this.value)">
+          <option value="puan">Puan Ortalaması</option>
+          <option value="mat">Matematik</option>
+          <option value="fen">Fen Bilimleri</option>
+          <option value="tur">Türkçe</option>
+          <option value="ink">İnkılap</option>
+          <option value="din">Din Kültürü</option>
+          <option value="ing">İngilizce</option>
         </select>
-        <input type="text" id="f-unite-custom" placeholder="Kendi üniteni yaz..." style="display:none;margin-top:6px">
       </div>
-      <div class="field">
-        <label>Alt Başlık / Konu</label>
-        <input type="text" id="f-alt" placeholder="örn. Eğik Düzlem">
+      <div class="chart-wrap" style="height:320px"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Ders avg cards -->
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-title"><span class="dot" style="background:#7c3aed"></span>Ağırlıklı net ortalamaları</div>
+    <div class="ders-avg-grid" id="ders-avg-grid"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-panel">
+    <div class="table-header">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="table-title">Sınav listesi</div>
+        <div class="table-actions" id="table-actions">
+          <button class="table-action-btn" onclick="duzenleSecili()">✎ Düzenle</button>
+          <button class="table-action-btn delete" onclick="silSecili()">Sil</button>
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label>Ne Öğrendim?</label>
-      <textarea id="f-detay" placeholder="Neyi yanlış yaptım, doğrusu ne — buraya yaz..."></textarea>
-    </div>
-    <div class="field">
-      <label>Yanlış Soru Görseli <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.75rem">(opsiyonel)</span></label>
-      <div class="upload-area" id="upload-area" onclick="document.getElementById('f-gorsel').click()">
-        <input type="file" id="f-gorsel" accept="image/*" onchange="gorselSecildi(event)">
-        <div class="upload-label" id="upload-label">📎 &nbsp;Görsel ekle (jpg, png...)</div>
-        <div class="upload-preview" id="upload-preview" style="display:none">
-          <img id="preview-img" src="" alt="önizleme">
-          <button class="remove-img" onclick="gorselKaldir(event)">✕</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input class="search-input" id="search-input" placeholder="Ara..." oninput="render()">
+        <div class="tab-bar" id="tur-tabs">
+          <button class="tab active" onclick="setTab(this,'Tümü')">Tümü</button>
+          <button class="tab" onclick="setTab(this,'Bireysel')">Bireysel</button>
+          <button class="tab" onclick="setTab(this,'Okul')">Okul</button>
+          <button class="tab" onclick="setTab(this,'MEB')">MEB</button>
         </div>
       </div>
     </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" onclick="kaydet()">💾 Kaydet</button>
-      <button class="btn btn-secondary" onclick="temizle()">Temizle</button>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="select-col"></th>
+            <th>#</th>
+            <th>Sınav No</th>
+            <th>Tarih</th>
+            <th>Tür</th>
+            <th class="hide-sm">Yayınevi / Sınav</th>
+            <th>Mat</th><th>Fen</th><th>Türkçe</th>
+            <th>İnkılap</th><th>Din</th><th>İng</th>
+            <th>Top. Net</th>
+            <th>Puan</th>
+          </tr>
+        </thead>
+        <tbody id="sinav-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- LİSTE -->
-<div id="view-liste" class="view">
-  <div class="list-controls">
-    <input type="text" id="search" placeholder="🔍 Ara..." oninput="renderListe()">
-    <select id="filter-ders" onchange="renderListe()">
-      <option value="">Tüm Dersler</option>
-      <option value="Matematik">Matematik</option>
-      <option value="Fen Bilimleri">Fen Bilimleri</option>
-      <option value="Türkçe">Türkçe</option>
-      <option value="İnkılap Tarihi">İnkılap Tarihi</option>
-      <option value="Din Kültürü">Din Kültürü</option>
-      <option value="İngilizce">İngilizce</option>
-    </select>
-    <span class="count-badge" id="count-label"></span>
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Yeni sınav ekle</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tarih</label>
+        <input type="date" id="f-tarih">
+      </div>
+      <div class="form-group">
+        <label>Tür</label>
+        <select id="f-tur">
+          <option>Bireysel</option>
+          <option>Okul</option>
+          <option>MEB</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Sınav No</label>
+        <input type="number" id="f-sinav-no" min="0" placeholder="Örn: 5">
+      </div>
+      <div class="form-group form-full">
+        <label>Yayınevi / Sınav adı</label>
+        <input type="text" id="f-yayinevi" placeholder="Örn: Bahçeşehir (2025-2026)">
+      </div>
+    </div>
+
+    <div class="ders-section">
+      <div class="ders-section-title">Doğru / Yanlış / Boş (her ders için gir)</div>
+      <div class="ders-grid" id="ders-form-grid">
+        <div class="ders-grid-head">
+          <span>Ders</span>
+          <span style="text-align:center">Doğru</span>
+          <span style="text-align:center">Yanlış</span>
+          <span style="text-align:center">Boş</span>
+          <span style="text-align:center">Net</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">İptal</button>
+      <button class="btn btn-primary" id="save-btn" onclick="kaydet()">Kaydet</button>
+    </div>
   </div>
-  <div class="lesson-list" id="lesson-list"></div>
 </div>
 
-<!-- TEKRAR -->
-<div id="view-tekrar" class="view">
-  <div class="tekrar-wrap">
-    <p class="tekrar-info">Kaydedilen notlarından rastgele kartlar gösterilir.</p>
-    <div class="progress-bar-wrap">
-      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-    <div class="tekrar-card" id="tekrar-card">
-      <div class="q-label">Soru</div>
-      <div class="q-text" id="t-unite">—</div>
-      <div class="q-ders" id="t-ders">—</div>
-      <div class="q-img" id="t-img"><img id="t-img-el" src="" alt="soru görseli" onclick="lightboxAcSrc(this.src)"></div>
-      <div class="answer-box" id="t-detay"></div>
-    </div>
-    <div class="tekrar-controls">
-      <button class="btn btn-secondary" onclick="toggleCevap()">👁 Cevabı Göster / Gizle</button>
-      <button class="btn btn-primary" onclick="sonraki()">Sonraki →</button>
-    </div>
-    <p id="tekrar-bitti" style="margin-top:20px;color:var(--green);font-weight:800;display:none;">🎉 Tebrikler, tüm kartları bitirdin!</p>
-  </div>
-</div>
+<script>
+// ──────────────────────────────────────
+// DERS TANIMLAMALARI
+// ──────────────────────────────────────
+const DERSLER = [
+  {key:'mat', ad:'Matematik',    soru:20, renk:'#2563eb'},
+  {key:'fen', ad:'Fen Bilimleri',soru:20, renk:'#16a34a'},
+  {key:'tur', ad:'Türkçe',       soru:20, renk:'#dc2626'},
+  {key:'ink', ad:'İnkılap',      soru:10, renk:'#7c3aed'},
+  {key:'din', ad:'Din Kültürü',  soru:10, renk:'#ea580c'},
+  {key:'ing', ad:'İngilizce',    soru:10, renk:'#0891b2'},
+];
+const TOPLAM_SORU = DERSLER.reduce((a,d)=>a+d.soru,0); // 90
 
-<!-- İSTATİSTİK -->
-<div id="view-istatistik" class="view">
-  <div class="stats-grid" id="stats-grid"></div>
-  <div class="ders-breakdown" id="ders-breakdown"></div>
-</div>
+// ──────────────────────────────────────
+// VERİ
+// ──────────────────────────────────────
+let veri = [
+  {no:1, sinavNo:1, tarih:'2025-09-28',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2025-2026)',           mat:{d:20,y:0,b:0}, fen:{d:14,y:6,b:0}, tur:{d:17,y:3,b:0}, ink:{d:2,y:8,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:2, sinavNo:1, tarih:'2025-09-30',sinavTur:'Bireysel',yayinevi:'Ankara Yayınları (2024-2025)',      mat:{d:15,y:4,b:1}, fen:{d:17,y:3,b:0}, tur:{d:18,y:2,b:0}, ink:{d:7,y:3,b:0},  din:{d:9,y:1,b:0},  ing:{d:8,y:2,b:0}},
+  {no:3, sinavNo:1, tarih:'2025-10-02',sinavTur:'Bireysel',yayinevi:'Fenomen Okul (2022-2023)',          mat:{d:18,y:2,b:0}, fen:{d:18,y:2,b:0}, tur:{d:17,y:3,b:0}, ink:{d:7,y:3,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:4, sinavNo:2, tarih:'2025-10-04',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2025-2026)',           mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:8,y:2,b:0},  din:{d:9,y:1,b:0},  ing:{d:9,y:1,b:0}},
+  {no:5, sinavNo:1, tarih:'2025-10-05',sinavTur:'Okul',    yayinevi:'Newton Yayınları',                 mat:{d:19,y:1,b:0}, fen:{d:20,y:0,b:0}, tur:{d:18,y:2,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:9,y:1,b:0}},
+  {no:6, sinavNo:1, tarih:'2025-10-11',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu (2024-2025)',         mat:{d:15,y:1,b:4}, fen:{d:17,y:3,b:0}, tur:{d:15,y:5,b:0}, ink:{d:7,y:2,b:1},  din:{d:7,y:3,b:0},  ing:{d:10,y:0,b:0}},
+  {no:7, sinavNo:5, tarih:'2025-10-14',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2025-2026)',           mat:{d:15,y:2,b:3}, fen:{d:16,y:3,b:1}, tur:{d:17,y:3,b:0}, ink:{d:8,y:2,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:8, sinavNo:1, tarih:'2025-10-15',sinavTur:'Bireysel',yayinevi:'Hız Yayınları (2024-2025)',        mat:{d:18,y:2,b:0}, fen:{d:16,y:4,b:0}, tur:{d:19,y:1,b:0}, ink:{d:8,y:2,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:9, sinavNo:1, tarih:'2025-10-17',sinavTur:'Okul',    yayinevi:'Hız Yayınları (2025-2026)',        mat:{d:18,y:2,b:0}, fen:{d:20,y:0,b:0}, tur:{d:16,y:4,b:0}, ink:{d:8,y:2,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:10, sinavNo:1, tarih:'2025-10-19',sinavTur:'Okul',    yayinevi:'Sinan Kuzucu (2025-2026)',         mat:{d:17,y:3,b:0}, fen:{d:18,y:2,b:0}, tur:{d:18,y:2,b:0}, ink:{d:10,y:0,b:0}, din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:11, sinavNo:1, tarih:'2025-10-25',sinavTur:'Okul',    yayinevi:'Özdebir Yayınları',               mat:{d:16,y:4,b:0}, fen:{d:19,y:1,b:0}, tur:{d:17,y:3,b:0}, ink:{d:8,y:2,b:0},  din:{d:10,y:0,b:0}, ing:{d:9,y:1,b:0}},
+  {no:12, sinavNo:6, tarih:'2025-10-29',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2024-2025)',           mat:{d:18,y:2,b:0}, fen:{d:18,y:2,b:0}, tur:{d:17,y:3,b:0}, ink:{d:8,y:2,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:13, sinavNo:3, tarih:'2025-11-02',sinavTur:'Okul',    yayinevi:'VIP Yayınları',                   mat:{d:15,y:5,b:0}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:14, sinavNo:1, tarih:'2025-11-08',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:16,y:4,b:0}, fen:{d:18,y:2,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:7,y:3,b:0},  ing:{d:10,y:0,b:0}},
+  {no:15, sinavNo:2, tarih:'2025-11-15',sinavTur:'Bireysel',yayinevi:'MUBA Yayınları',                  mat:{d:18,y:2,b:0}, fen:{d:18,y:2,b:0}, tur:{d:20,y:0,b:0}, ink:{d:9,y:1,b:0},  din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:16, sinavNo:2, tarih:'2025-11-23',sinavTur:'Bireysel',yayinevi:'Hız Yayınları (2024-2025)',        mat:{d:19,y:1,b:0}, fen:{d:18,y:2,b:0}, tur:{d:20,y:0,b:0}, ink:{d:10,y:0,b:0}, din:{d:9,y:1,b:0},  ing:{d:9,y:1,b:0}},
+  {no:17, sinavNo:2, tarih:'2025-11-25',sinavTur:'Okul',    yayinevi:'Huz Yayınları (2025-2026)',        mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:16,y:4,b:0}, ink:{d:6,y:4,b:0},  din:{d:8,y:2,b:0},  ing:{d:9,y:1,b:0}},
+  {no:18, sinavNo:2, tarih:'2025-11-29',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu (2024-2025)',         mat:{d:17,y:0,b:3}, fen:{d:17,y:3,b:0}, tur:{d:19,y:1,b:0}, ink:{d:7,y:3,b:0},  din:{d:10,y:0,b:0}, ing:{d:9,y:1,b:0}},
+  {no:19, sinavNo:2, tarih:'2025-12-06',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:19,y:1,b:0}, fen:{d:14,y:6,b:0}, tur:{d:16,y:4,b:0}, ink:{d:6,y:4,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:20, sinavNo:2, tarih:'2025-12-07',sinavTur:'Okul',    yayinevi:'MUBA Yayınları (2025-2026)',       mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:18,y:2,b:0}, ink:{d:8,y:2,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:21, sinavNo:10, tarih:'2025-12-13',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2024-2025)',           mat:{d:20,y:0,b:0}, fen:{d:20,y:0,b:0}, tur:{d:18,y:2,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:22, sinavNo:3, tarih:'2025-12-20',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu (2022-2022)',         mat:{d:18,y:1,b:1}, fen:{d:20,y:0,b:0}, tur:{d:20,y:0,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:23, sinavNo:2, tarih:'2025-12-21',sinavTur:'Okul',    yayinevi:'Hiperzeka (2025-2026)',             mat:{d:17,y:3,b:0}, fen:{d:19,y:1,b:0}, tur:{d:18,y:2,b:0}, ink:{d:9,y:1,b:0},  din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:24, sinavNo:2, tarih:'2025-12-27',sinavTur:'Okul',    yayinevi:'Özdebir Yayınları (2025-2026)',   mat:{d:19,y:1,b:0}, fen:{d:18,y:2,b:0}, tur:{d:17,y:3,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:9,y:1,b:0}},
+  {no:25, sinavNo:14, tarih:'2026-01-01',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2025-2026)',           mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:10,y:0,b:0}, din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:26, sinavNo:3, tarih:'2026-01-03',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:19,y:1,b:0}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:10,y:0,b:0}, din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:27, sinavNo:3, tarih:'2026-01-10',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu (2024-2025)',         mat:{d:19,y:1,b:0}, fen:{d:18,y:2,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:28, sinavNo:3, tarih:'2026-01-11',sinavTur:'Okul',    yayinevi:'Sinan Kuzucu (2025-2026)',         mat:{d:20,y:0,b:0}, fen:{d:17,y:3,b:0}, tur:{d:19,y:1,b:0}, ink:{d:7,y:3,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:29, sinavNo:1, tarih:'2026-01-17',sinavTur:'Okul',    yayinevi:'Fatih AY Yayınları 2025-2026',    mat:{d:20,y:0,b:0}, fen:{d:17,y:3,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:30, sinavNo:4, tarih:'2026-02-07',sinavTur:'Bireysel',yayinevi:'Hız Yayınları (2024-2025)',        mat:{d:20,y:0,b:0}, fen:{d:20,y:0,b:0}, tur:{d:19,y:1,b:0}, ink:{d:10,y:0,b:0}, din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:31, sinavNo:4, tarih:'2026-02-08',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:18,y:2,b:0}, fen:{d:17,y:3,b:0}, tur:{d:17,y:3,b:0}, ink:{d:6,y:4,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:32, sinavNo:4, tarih:'2026-02-12',sinavTur:'Okul',    yayinevi:'Hız Yayınları (2025-2026)',        mat:{d:19,y:1,b:0}, fen:{d:19,y:1,b:0}, tur:{d:17,y:3,b:0}, ink:{d:6,y:4,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:33, sinavNo:20, tarih:'2026-02-15',sinavTur:'Bireysel',yayinevi:'Bahçeşehir (2025-2026)',           mat:{d:19,y:0,b:1}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:9,y:1,b:0}},
+  {no:34, sinavNo:3, tarih:'2026-02-26',sinavTur:'Okul',    yayinevi:'Özdebir Yayınları (2025-2026)',   mat:{d:20,y:0,b:0}, fen:{d:20,y:0,b:0}, tur:{d:17,y:3,b:0}, ink:{d:6,y:4,b:0},  din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:35, sinavNo:4, tarih:'2026-02-28',sinavTur:'Okul',    yayinevi:'Sinan Kuzucu (2025-2026)',         mat:{d:20,y:0,b:0}, fen:{d:14,y:6,b:0}, tur:{d:17,y:3,b:0}, ink:{d:9,y:1,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:36, sinavNo:3, tarih:'2026-03-01',sinavTur:'Okul',    yayinevi:'Hiperzeka (2025-2026)',             mat:{d:19,y:1,b:0}, fen:{d:18,y:2,b:0}, tur:{d:18,y:2,b:0}, ink:{d:8,y:2,b:0},  din:{d:9,y:1,b:0},  ing:{d:9,y:1,b:0}},
+  {no:37, sinavNo:5, tarih:'2026-03-07',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:18,y:2,b:0}, fen:{d:17,y:3,b:0}, tur:{d:18,y:2,b:0}, ink:{d:7,y:3,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:38, sinavNo:2, tarih:'2026-03-08',sinavTur:'Okul',    yayinevi:'Paraf Yayınları (2025-2026)',      mat:{d:17,y:3,b:0}, fen:{d:15,y:5,b:0}, tur:{d:20,y:0,b:0}, ink:{d:10,y:0,b:0}, din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:39, sinavNo:5, tarih:'2026-03-11',sinavTur:'Okul',    yayinevi:'Hız Yayınları (2025-2026)',        mat:{d:19,y:1,b:0}, fen:{d:15,y:5,b:0}, tur:{d:17,y:3,b:0}, ink:{d:8,y:2,b:0},  din:{d:6,y:4,b:0},  ing:{d:9,y:1,b:0}},
+  {no:40, sinavNo:5, tarih:'2026-03-29',sinavTur:'Okul',    yayinevi:'Ankara Yayınları 2025-2026',       mat:{d:17,y:3,b:0}, fen:{d:19,y:1,b:0}, tur:{d:16,y:4,b:0}, ink:{d:5,y:5,b:0},  din:{d:7,y:3,b:0},  ing:{d:9,y:1,b:0}},
+  {no:41, sinavNo:6, tarih:'2026-04-04',sinavTur:'MEB',     yayinevi:'MEBİ (Milli Eğitim Bakanlığı)',   mat:{d:18,y:2,b:0}, fen:{d:19,y:1,b:0}, tur:{d:20,y:0,b:0}, ink:{d:10,y:0,b:0}, din:{d:7,y:3,b:0},  ing:{d:10,y:0,b:0}},
+  {no:42, sinavNo:4, tarih:'2026-04-11',sinavTur:'Okul',    yayinevi:'Özdebir Yayınları (2025-2026)',   mat:{d:20,y:0,b:0}, fen:{d:17,y:3,b:0}, tur:{d:20,y:0,b:0}, ink:{d:9,y:1,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:44, sinavNo:10, tarih:'2026-04-16',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu Genel Değerlendirme',mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:18,y:2,b:0}, ink:{d:9,y:1,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:45, sinavNo:5, tarih:'2026-04-18',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu (2024-2025)',         mat:{d:18,y:2,b:0}, fen:{d:18,y:2,b:0}, tur:{d:19,y:1,b:0}, ink:{d:8,y:2,b:0},  din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+  {no:46, sinavNo:5, tarih:'2026-04-19',sinavTur:'Okul',    yayinevi:'Sinan Kuzucu (2025-2026)',         mat:{d:17,y:3,b:0}, fen:{d:14,y:6,b:0}, tur:{d:17,y:3,b:0}, ink:{d:10,y:0,b:0}, din:{d:8,y:2,b:0},  ing:{d:10,y:0,b:0}},
+  {no:47, sinavNo:6, tarih:'2026-04-20',sinavTur:'Okul',    yayinevi:'Hız Yayınları (2025-2026)',        mat:{d:17,y:3,b:0}, fen:{d:15,y:5,b:0}, tur:{d:20,y:0,b:0}, ink:{d:9,y:1,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:48, sinavNo:8, tarih:'2026-04-23',sinavTur:'Bireysel',yayinevi:'Sinan Kuzucu Genel Değerlendirme',mat:{d:19,y:1,b:0}, fen:{d:19,y:1,b:0}, tur:{d:19,y:1,b:0}, ink:{d:9,y:1,b:0},  din:{d:9,y:1,b:0},  ing:{d:10,y:0,b:0}},
+  {no:51, sinavNo:5, tarih:'2026-04-25',sinavTur:'Okul',    yayinevi:'Fenomen Okul (2025-2026)',          mat:{d:19,y:1,b:0}, fen:{d:17,y:3,b:0}, tur:{d:18,y:2,b:0}, ink:{d:10,y:0,b:0}, din:{d:9,y:1,b:0},  ing:{d:9,y:1,b:0}},
+  {no:52, sinavNo:2023, tarih:'2026-05-01',sinavTur:'Bireysel',yayinevi:'MEB LGS 2023',                     mat:{d:20,y:0,b:0}, fen:{d:19,y:1,b:0}, tur:{d:18,y:2,b:0}, ink:{d:10,y:0,b:0}, din:{d:10,y:0,b:0}, ing:{d:10,y:0,b:0}},
+];
 
-<!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="lightboxKapat()">
-  <span class="lightbox-close">✕</span>
-  <img id="lightbox-img" src="" alt="">
-</div>
+// ──────────────────────────────────────
+// HESAPLAMA FONKSİYONLARI
+// ──────────────────────────────────────
+function net(dObj){ return dObj.d - dObj.y/3; }
 
-<div class="toast" id="toast"></div>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCe2Kjrem8a1oUZPXLA60CNNNQSrEeq1bc",
-  authDomain: "hata-analizi.firebaseapp.com",
-  projectId: "hata-analizi",
-  storageBucket: "hata-analizi.firebasestorage.app",
-  messagingSenderId: "1057462913477",
-  appId: "1:1057462913477:web:3ef56e3b56e68082be63ac"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const COL = 'dersler';
-
-let dersler = [];
-let tekrarSira = [];
-let tekrarIndex = 0;
-let editId = null;
-let pendingGorsel = null;
-
-// ── SYNC INDICATOR ──
-function syncDurum(durum, mesaj) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  dot.className = 'sync-dot ' + durum;
-  lbl.textContent = mesaj;
+function toplamNet(s){
+  return DERSLER.reduce((a,dr)=>a+net(s[dr.key]),0);
 }
 
-// ── REALTIME LİSTEN ──
-const q = query(collection(db, COL), orderBy('tarihMs', 'desc'));
-onSnapshot(q, (snap) => {
-  dersler = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
-  syncDurum('ok', 'Senkronize ✓');
-  const aktif = document.querySelector('.tab.active');
-  if (aktif) {
-    const tabMap = ['ekle','liste','tekrar','istatistik'];
-    const idx = Array.from(document.querySelectorAll('.tab')).indexOf(aktif);
-    const name = tabMap[idx];
-    if (name === 'liste') renderListe();
-    if (name === 'istatistik') renderIstatistik();
+function toplamDogru(s){ return DERSLER.reduce((a,dr)=>a + fmtInt((s[dr.key] || {}).d), 0); }
+function toplamYanlis(s){ return DERSLER.reduce((a,dr)=>a + fmtInt((s[dr.key] || {}).y), 0); }
+function toplamBos(s){ return DERSLER.reduce((a,dr)=>a + fmtInt((s[dr.key] || {}).b), 0); }
+
+function fmtNet(v){ return Number(v || 0).toFixed(2); }
+function fmtPuan(v){ return Number(v || 0).toFixed(3); }
+function fmtInt(v){ return Number.isFinite(Number(v)) ? Number(v) : 0; }
+
+function normalizeTur(tur){
+  if(tur && typeof tur === 'object'){
+    return tur.ad || tur.name || tur.label || tur.value || tur.text || '';
   }
-}, (err) => {
-  syncDurum('err', 'Bağlantı hatası');
-  console.error(err);
-});
+  return String(tur ?? '').trim();
+}
 
-// ── ÜNİTE VERİTABANI ──
-const LGS_UNITELER = {
-  'Matematik': ['Çarpanlar ve Katlar','Üslü İfadeler','Kareköklü İfadeler','Veri Analizi','Basit Olayların Olma Olasılığı','Cebirsel İfadeler ve Özdeşlikler','Doğrusal Denklemler','Eşitsizlikler','Üçgenler','Eşlik ve Benzerlik','Dönüşüm Geometrisi','Geometrik Cisimler'],
-  'Fen Bilimleri': ['Mevsimler ve İklim','DNA ve Genetik Kod','Basınç','Madde ve Endüstri','Basit Makineler','Enerji Dönüşümleri ve Çevre Bilimi','Elektrik Yükleri ve Elektrik Enerjisi'],
-  'Türkçe': ['Sözcükte Anlam','Cümlede Anlam','Paragrafta Anlam','Söz Sanatları','Fiilimsiler','Fiilde Çatı','Cümlenin Ögeleri','Cümle Türleri','Yazım Kuralları','Noktalama İşaretleri','Anlatım Bozuklukları','Metin Türleri','Sözel Mantık / Görsel Okuma'],
-  'İnkılap Tarihi': ['Bir Kahraman Doğuyor','Milli Uyanış: Bağımsızlık Yolunda Atılan Adımlar','Milli Bir Destan: "Ya İstiklal Ya Ölüm"','Atatürkçülük ve Çağdaşlaşan Türkiye','Demokratikleşme Çabaları','Atatürk Dönemi Türk Dış Politikası','Atatürk\'ün Ölümü ve Sonrası'],
-  'Din Kültürü': ['Kader İnancı','Zekat ve Sadaka','Din ve Hayat','Hz. Muhammed\'in Örnekliği','Kur\'an-ı Kerim ve Özellikleri'],
-  'İngilizce': ['Friendship','Teen Life','In The Kitchen','On the Phone','The Internet','Adventures','Tourism','Chores','Science','Natural Forces'],
-};
-
-// ── TAB ──
-window.switchTab = function(name) {
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['ekle','liste','tekrar','istatistik'][i] === name);
+function getFilteredData(includeSearch=true){
+  const qEl = document.getElementById('search-input');
+  const q = includeSearch && qEl ? (qEl.value || '').trim().toLowerCase() : '';
+  return veri.filter(s=>{
+    const tur = normalizeTur(s.sinavTur);
+    const turOk = aktifTur === 'Tümü' || tur === aktifTur;
+    const searchOk = !q ||
+      String(s.yayinevi || '').toLowerCase().includes(q) ||
+      String(s.tarih || '').includes(q) ||
+      String(s.sinavNo ?? '').includes(q) ||
+      tur.toLowerCase().includes(q);
+    return turOk && searchOk;
   });
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
-  if (name === 'liste') renderListe();
-  if (name === 'tekrar') initTekrar();
-  if (name === 'istatistik') renderIstatistik();
-};
+}
 
-// ── GÖRSEL ──
-window.gorselSecildi = function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    pendingGorsel = ev.target.result;
-    document.getElementById('preview-img').src = pendingGorsel;
-    document.getElementById('upload-preview').style.display = 'inline-block';
-    const lbl = document.getElementById('upload-label');
-    lbl.textContent = '✅  ' + file.name;
-    lbl.classList.add('has-file');
-    document.getElementById('upload-area').classList.add('has-file');
-  };
-  reader.readAsDataURL(file);
-};
+const PUAN_AGIRLIKLARI = [0.13,0.12,0.11,0.10,0.09,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01];
 
-window.gorselKaldir = function(e) {
-  if (e && e.stopPropagation) e.stopPropagation();
-  pendingGorsel = null;
-  document.getElementById('f-gorsel').value = '';
-  document.getElementById('upload-preview').style.display = 'none';
-  const lbl = document.getElementById('upload-label');
-  lbl.textContent = '📎 \u00a0Görsel ekle (jpg, png...)';
-  lbl.classList.remove('has-file');
-  document.getElementById('upload-area').classList.remove('has-file');
-};
-
-// ── FORM ──
-window.dersSecildi = function() {
-  const ders = document.getElementById('f-ders').value;
-  const sel = document.getElementById('f-unite');
-  const uniteler = LGS_UNITELER[ders] || [];
-  sel.innerHTML = '<option value="">— Ünite seç —</option>';
-  uniteler.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; sel.appendChild(o); });
-  const d = document.createElement('option'); d.value = '__diger__'; d.textContent = '✏️  Diğer / Manuel yaz...'; sel.appendChild(d);
-  document.getElementById('f-unite-custom').style.display = 'none';
-};
-
-window.uniteSecildi = function() {
-  document.getElementById('f-unite-custom').style.display = document.getElementById('f-unite').value === '__diger__' ? 'block' : 'none';
-};
-
-window.kaydet = async function() {
-  const ders = document.getElementById('f-ders').value.trim();
-  const uniteEl = document.getElementById('f-unite');
-  const customEl = document.getElementById('f-unite-custom');
-  const unite = (uniteEl.value === '__diger__' ? customEl.value : uniteEl.value).trim();
-  const alt = document.getElementById('f-alt').value.trim();
-  const detay = document.getElementById('f-detay').value.trim();
-
-  if (!unite || !detay) { alert('Ünite adı ve "Ne Öğrendim?" alanını doldurman gerekiyor.'); return; }
-
-  syncDurum('loading', 'Kaydediliyor...');
-  try {
-    if (editId !== null) {
-      const d = dersler.find(x => x.firestoreId === editId);
-      const gorsel = pendingGorsel !== null ? pendingGorsel : (d ? d.gorsel || null : null);
-      await updateDoc(doc(db, COL, editId), { ders, unite, alt, detay, gorsel });
-      editId = null;
-    } else {
-      await addDoc(collection(db, COL), {
-        ders, unite, alt, detay,
-        gorsel: pendingGorsel || null,
-        tarih: new Date().toLocaleDateString('tr-TR'),
-        tarihMs: Date.now()
-      });
+function agirlikliPuanSeri(liste){
+  return liste.map((_, endIndex)=>{
+    const pencere = Math.min(PUAN_AGIRLIKLARI.length, endIndex + 1);
+    let pay=0, payda=0;
+    for(let geriye=0; geriye<pencere; geriye++){
+      const sinav = liste[endIndex - geriye];
+      const w = PUAN_AGIRLIKLARI[geriye];
+      pay += w * puan(sinav);
+      payda += w;
     }
-    temizle();
-    showToast('Kaydedildi!');
-  } catch(err) {
-    syncDurum('err', 'Kayıt hatası');
-    alert('Kayıt sırasında hata oluştu: ' + err.message);
-  }
-};
-
-window.temizle = function() {
-  document.getElementById('f-unite').value = '';
-  document.getElementById('f-unite-custom').value = '';
-  document.getElementById('f-unite-custom').style.display = 'none';
-  document.getElementById('f-alt').value = '';
-  document.getElementById('f-detay').value = '';
-  gorselKaldir(null);
-  editId = null;
-};
-
-window.sil = async function(firestoreId) {
-  if (!confirm('Bu notu silmek istiyor musun?')) return;
-  syncDurum('loading', 'Siliniyor...');
-  try {
-    await deleteDoc(doc(db, COL, firestoreId));
-  } catch(err) {
-    syncDurum('err', 'Silme hatası');
-  }
-};
-
-window.duzenle = function(firestoreId) {
-  const d = dersler.find(x => x.firestoreId === firestoreId);
-  if (!d) return;
-  document.getElementById('f-ders').value = d.ders;
-  dersSecildi();
-  setTimeout(() => {
-    const sel = document.getElementById('f-unite');
-    const opts = Array.from(sel.options).map(o => o.value);
-    if (opts.includes(d.unite)) { sel.value = d.unite; document.getElementById('f-unite-custom').style.display = 'none'; }
-    else { sel.value = '__diger__'; document.getElementById('f-unite-custom').style.display = 'block'; document.getElementById('f-unite-custom').value = d.unite; }
-  }, 0);
-  document.getElementById('f-alt').value = d.alt || '';
-  document.getElementById('f-detay').value = d.detay;
-  if (d.gorsel) {
-    pendingGorsel = d.gorsel;
-    document.getElementById('preview-img').src = d.gorsel;
-    document.getElementById('upload-preview').style.display = 'inline-block';
-    const lbl = document.getElementById('upload-label');
-    lbl.textContent = '✅  Mevcut görsel'; lbl.classList.add('has-file');
-    document.getElementById('upload-area').classList.add('has-file');
-  } else { pendingGorsel = null; }
-  editId = firestoreId;
-  switchTab('ekle');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-// ── LİSTE ──
-window.renderListe = function renderListe() {
-  const q2 = document.getElementById('search').value.toLowerCase();
-  const fd = document.getElementById('filter-ders').value;
-  const filtered = dersler.filter(d => {
-    const text = (d.unite + d.alt + d.detay + d.ders).toLowerCase();
-    return (!q2 || text.includes(q2)) && (!fd || d.ders === fd);
+    return payda ? pay/payda : 0;
   });
-  document.getElementById('count-label').textContent = filtered.length + ' not';
-  const el = document.getElementById('lesson-list');
-  if (filtered.length === 0) {
-    el.innerHTML = `<div class="empty"><div class="icon">🗒️</div>Henüz not yok.<br>Yanlışlarını kaydedince burada görünecek!</div>`;
+}
+
+function agirlikliDersSeri(liste, dersKey){
+  return liste.map((_, endIndex)=>{
+    const pencere = Math.min(PUAN_AGIRLIKLARI.length, endIndex + 1);
+    let pay=0, payda=0;
+    for(let geriye=0; geriye<pencere; geriye++){
+      const sinav = liste[endIndex - geriye];
+      const w = PUAN_AGIRLIKLARI[geriye];
+      pay += w * net(sinav[dersKey]);
+      payda += w;
+    }
+    return payda ? pay/payda : 0;
+  });
+}
+
+function siralaVeNumaralandir(){
+  veri.sort((a,b)=>String(a.tarih || '').localeCompare(String(b.tarih || '')));
+  veri.forEach((s,i)=>{ s.no = i + 1; });
+}
+
+function puan(s){
+  return 196.613
+    + net(s.tur) * 4.1076
+    + net(s.ink) * 1.7293
+    + net(s.din) * 1.8182
+    + net(s.ing) * 1.5308
+    + net(s.mat) * 4.6325
+    + net(s.fen) * 3.8901;
+}
+
+function hexToRgb(hex){
+  const clean = String(hex).replace('#','');
+  return {
+    r: parseInt(clean.slice(0,2),16),
+    g: parseInt(clean.slice(2,4),16),
+    b: parseInt(clean.slice(4,6),16)
+  };
+}
+
+function rgbToHex({r,g,b}){
+  return '#' + [r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+}
+
+function mixColor(c1, c2, t){
+  const a = hexToRgb(c1), b = hexToRgb(c2);
+  return rgbToHex({
+    r: a.r + (b.r-a.r)*t,
+    g: a.g + (b.g-a.g)*t,
+    b: a.b + (b.b-a.b)*t
+  });
+}
+
+function puanColor(p){
+  const red = '#dc2626';
+  const yellow = '#ca8a04';
+  const green = '#16a34a';
+  const v = Number(p) || 0;
+  if(v <= 450) return red;
+  if(v >= 490) return green;
+  if(v <= 465) return mixColor(red, yellow, (v-450)/15);
+  return mixColor(yellow, green, (v-465)/25);
+}
+
+function netColor(n, soru){
+  const red = '#dc2626';
+  const yellow = '#ca8a04';
+  const green = '#16a34a';
+  const maxSoru = Number(soru) || 20;
+  const v = Number(n) || 0;
+  const redLimit = maxSoru * 0.75;   // 20 soruda 15, 10 soruda 7.5
+  const yellowLimit = maxSoru * 0.85; // 20 soruda 17, 10 soruda 8.5
+  const greenLimit = maxSoru * 0.95;  // 20 soruda 19, 10 soruda 9.5
+  if(v <= redLimit) return red;
+  if(v >= greenLimit) return green;
+  if(v <= yellowLimit) return mixColor(red, yellow, (v-redLimit)/(yellowLimit-redLimit));
+  return mixColor(yellow, green, (v-yellowLimit)/(greenLimit-yellowLimit));
+}
+
+function softNetColor(n, soru){
+  return mixColor('#ffffff', netColor(n, soru), 0.26);
+}
+
+function readableLabelColor(n, soru){
+  return mixColor('#1a1916', netColor(n, soru), 0.35);
+}
+
+function agirlikliOrt(dersKey, liste=getFilteredData()){
+  const pencere = Math.min(PUAN_AGIRLIKLARI.length, liste.length);
+  let pay=0, payda=0;
+  for(let geriye=0; geriye<pencere; geriye++){
+    const sinav = liste[liste.length - 1 - geriye];
+    const w = PUAN_AGIRLIKLARI[geriye];
+    pay += w * net(sinav[dersKey]);
+    payda += w;
+  }
+  return payda ? pay/payda : 0;
+}
+
+// ──────────────────────────────────────
+// DURUM
+// ──────────────────────────────────────
+let aktifTur = 'Tümü';
+let trendMode = 'puan';
+let seciliNo = null;
+let duzenlenenNo = null;
+let dersChartInst = null;
+let trendChartInst = null;
+
+// ──────────────────────────────────────
+// ANA RENDER
+// ──────────────────────────────────────
+function render(){
+  renderKPI();
+  renderDersChart();
+  renderTrendChart();
+  renderDersAvg();
+  renderTable();
+}
+
+function renderKPI(){
+  const liste = getFilteredData();
+  if(!liste.length){
+    document.getElementById('kpi-grid').innerHTML = `
+      <div class="kpi-card kpi-accent">
+        <div class="kpi-label">Kayıt</div>
+        <div class="kpi-val">0</div>
+        <div class="kpi-trend">Seçili filtreye uygun sınav yok</div>
+      </div>`;
+    document.getElementById('app-sub').textContent = `0 sınav görüntüleniyor`;
     return;
   }
-  el.innerHTML = filtered.map(d => `
-    <div class="lesson-card">
-      <div class="meta">
-        <span class="tag ders">${d.ders}</span>
-        <span class="tag">${d.unite}</span>
-        ${d.alt ? `<span style="font-size:0.82rem;color:var(--muted)">${d.alt}</span>` : ''}
-      </div>
-      <div class="subtitle">${d.alt || d.unite}</div>
-      <div class="detail">${escHtml(d.detay)}</div>
-      ${d.gorsel ? `<div class="card-img"><img src="${d.gorsel}" alt="soru görseli" onclick="lightboxAcSrc('${d.gorsel.substring(0,30)}','${d.firestoreId}')"></div>` : ''}
-      <div class="footer">
-        <span class="date">📅 ${d.tarih}${d.gorsel ? '&nbsp;·&nbsp;📷' : ''}</span>
-        <div class="card-actions">
-          <button class="btn btn-secondary" style="padding:6px 12px;font-size:0.8rem" onclick="duzenle('${d.firestoreId}')">✏️ Düzenle</button>
-          <button class="btn btn-danger" onclick="sil('${d.firestoreId}')">🗑 Sil</button>
+
+  const son = liste[liste.length-1];
+  const sonNet  = toplamNet(son);
+  const sonPuan = puan(son);
+  const onceki  = liste.length > 1 ? puan(liste[liste.length-2]) : null;
+  const fark    = onceki !== null ? sonPuan - onceki : null;
+  const enYuksek = Math.max(...liste.map(s=>puan(s)));
+  const genelOrt = liste.reduce((a,s)=>a+puan(s),0)/liste.length;
+
+  let trendHtml = '';
+  if(fark !== null){
+    const cls = fark >= 0 ? 'up' : 'dn';
+    const ikon = fark >= 0 ? '▲' : '▼';
+    trendHtml = `<div class="kpi-trend ${cls}">${ikon} ${fmtPuan(Math.abs(fark))} önceki sınavdan</div>`;
+  }
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card kpi-accent">
+      <div class="kpi-label">Son sınav puanı</div>
+      <div class="kpi-val" style="color:${puanColor(sonPuan)}">${fmtPuan(sonPuan)}</div>
+      ${trendHtml}
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Son sınav net</div>
+      <div class="kpi-val" style="color:${netColor(sonNet, TOPLAM_SORU)}">${fmtNet(sonNet)}</div>
+      <div class="kpi-trend">${TOPLAM_SORU} sorudan</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-label">Genel puan ort.</div>
+      <div class="kpi-val" style="color:${puanColor(genelOrt)}">${fmtPuan(genelOrt)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">En yüksek puan</div>
+      <div class="kpi-val" style="color:${puanColor(enYuksek)}">${fmtPuan(enYuksek)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Toplam sınav</div>
+      <div class="kpi-val">${liste.length}</div>
+    </div>
+  `;
+
+  document.getElementById('app-sub').textContent =
+    `${liste.length} sınav görüntüleniyor · Son güncelleme: ${son.tarih}`;
+}
+
+function renderDersChart(){
+  const ctx = document.getElementById('dersChart').getContext('2d');
+  if(dersChartInst){ dersChartInst.destroy(); }
+  const liste = getFilteredData();
+  const netOrtalar = DERSLER.map(dr=>agirlikliOrt(dr.key, liste));
+  const ortalar = DERSLER.map((dr,idx)=>{
+    const ort = netOrtalar[idx];
+    return parseFloat(fmtNet(dr.soru ? (ort / dr.soru) * 100 : 0));
+  });
+  const barColors = DERSLER.map((dr,idx)=>softNetColor(netOrtalar[idx], dr.soru));
+  const barBorderColors = DERSLER.map((dr,idx)=>netColor(netOrtalar[idx], dr.soru));
+  const barLabelColors = DERSLER.map((dr,idx)=>readableLabelColor(netOrtalar[idx], dr.soru));
+  const dersLabelPlugin = {
+    id:'dersLabelPlugin',
+    afterDatasetsDraw(chart){
+      const {ctx} = chart;
+      const meta = chart.getDatasetMeta(0);
+      ctx.save();
+      ctx.font = '800 12px DM Sans, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      meta.data.forEach((bar, i)=>{
+        const pct = ortalar[i] || 0;
+        const label = `%${fmtNet(pct)}`;
+        const y = Math.max(bar.y + 14, Math.min(bar.base - 14, bar.y + (bar.base - bar.y) * 0.45));
+        ctx.fillStyle = barLabelColors[i] || '#1a1916';
+        ctx.shadowColor = 'rgba(255,255,255,0.70)';
+        ctx.shadowBlur = 3;
+        ctx.fillText(label, bar.x, y);
+        ctx.shadowBlur = 0;
+      });
+      ctx.restore();
+    }
+  };
+  dersChartInst = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: DERSLER.map(d=>d.ad),
+      datasets:[{
+        label:'Ağırlıklı başarı %',
+        data: ortalar,
+        backgroundColor: barColors,
+        borderColor: barBorderColors,
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:8}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>{
+          const dr = DERSLER[c.dataIndex];
+          const netOrt = netOrtalar[c.dataIndex];
+          return `Başarı: %${fmtNet(c.parsed.y)} · Net ort: ${fmtNet(netOrt)} / ${dr.soru}`;
+        }}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{font:{family:'DM Sans',size:11}}},
+        y:{grid:{color:'rgba(0,0,0,0.05)'}, min:70, max:100,
+           ticks:{font:{family:'DM Mono',size:11}, callback:v=>`%${fmtNet(v)}`}}
+      }
+    },
+    plugins:[dersLabelPlugin]
+  });
+}
+
+function renderTrendChart(){
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendChartInst){ trendChartInst.destroy(); }
+  const liste = getFilteredData();
+  const labels = liste.map(s=>s.tarih);
+  const seciliDers = DERSLER.find(d=>d.key === trendMode);
+  const titleEl = document.getElementById('trend-title');
+
+  if(seciliDers){
+    const seri = agirlikliDersSeri(liste, seciliDers.key).map(v=>parseFloat(fmtNet(v)));
+    const seriRenkleri = seri.map(v=>netColor(v, seciliDers.soru));
+    if(titleEl){ titleEl.textContent = `${seciliDers.ad} ağırlıklı net trendi`; }
+    trendChartInst = new Chart(ctx,{
+      type:'line',
+      data:{
+        labels,
+        datasets:[{
+          label:`${seciliDers.ad} Ağırlıklı Net`,
+          data: seri,
+          borderColor: ctx=>{
+            const idx = ctx.p1DataIndex ?? ctx.dataIndex ?? 0;
+            return seriRenkleri[idx] || seciliDers.renk;
+          },
+          segment:{
+            borderColor: ctx=>seriRenkleri[ctx.p1DataIndex] || seciliDers.renk
+          },
+          backgroundColor: 'rgba(37,99,235,0.05)',
+          pointRadius:3, pointHoverRadius:5,
+          tension:0.35, fill:true, borderWidth:2,
+          pointBackgroundColor: seriRenkleri,
+          pointBorderColor: seriRenkleri,
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{
+            title:items=>{
+              const s = liste[items[0].dataIndex];
+              return `${s.tarih} · ${s.yayinevi}`;
+            },
+            label:c=>{
+              const hamNet = net(liste[c.dataIndex][seciliDers.key]);
+              return `Ağırlıklı net: ${fmtNet(c.parsed.y)} / ${seciliDers.soru} · Sınav neti: ${fmtNet(hamNet)}`;
+            }
+          }}
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{family:'DM Mono',size:10}}},
+          y:{grid:{color:'rgba(0,0,0,0.05)'},min:seciliDers.soru === 20 ? 14 : 7,max:seciliDers.soru,
+             ticks:{font:{family:'DM Mono',size:11}, callback:v=>fmtNet(v)}}
+        }
+      }
+    });
+    return;
+  }
+
+  if(titleEl){ titleEl.textContent = 'Ağırlıklı puan ortalaması'; }
+  const puanlar = liste.map(s=>puan(s));
+  const agirlikliPuanlar = agirlikliPuanSeri(liste).map(v=>parseFloat(fmtPuan(v)));
+  trendChartInst = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Ağırlıklı Puan Ortalaması',
+        data: agirlikliPuanlar,
+        borderColor:'#2563eb',
+        backgroundColor:'rgba(37,99,235,0.07)',
+        pointRadius:3, pointHoverRadius:5,
+        tension:0.35, fill:true, borderWidth:2,
+        pointBackgroundColor: agirlikliPuanlar.map(p=>puanColor(p)),
+        pointBorderColor: agirlikliPuanlar.map(p=>puanColor(p)),
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:items=>{
+            const s = liste[items[0].dataIndex];
+            return `${s.tarih} · ${s.yayinevi}`;
+          },
+          label:c=>`Ağırlıklı ort.: ${fmtPuan(c.parsed.y)} · Sınav puanı: ${fmtPuan(puanlar[c.dataIndex] || 0)}`
+        }}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{family:'DM Mono',size:10}}},
+        y:{grid:{color:'rgba(0,0,0,0.05)'},min:420,max:500,
+           ticks:{font:{family:'DM Mono',size:11}, callback:v=>fmtPuan(v)}}
+      }
+    }
+  });
+}
+
+function renderDersAvg(){
+  const liste = getFilteredData();
+  const html = DERSLER.map(dr=>{
+    const ort = agirlikliOrt(dr.key, liste);
+    const pct = dr.soru ? (ort/dr.soru)*100 : 0;
+    const renk = netColor(ort, dr.soru);
+    return `<div class="ders-avg-card">
+      <div class="ders-avg-name" style="color:${dr.renk}">${dr.ad}</div>
+      <div class="ders-avg-val" style="color:${renk}">${fmtNet(ort)}</div>
+      <div class="ders-avg-max">/ ${dr.soru} soru · %${pct.toFixed(0)}</div>
+      <div style="margin-top:8px">
+        <div style="height:4px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100,pct)}%;background:${renk};border-radius:3px;transition:width 0.6s ease"></div>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+  document.getElementById('ders-avg-grid').innerHTML = html;
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+function renderTable(){
+  const gorunen = getFilteredData();
+  if(seciliNo !== null && !gorunen.some(s=>s.no === seciliNo)){ seciliNo = null; }
+  let liste = gorunen.slice().reverse();
+
+  const rows = liste.map(s=>{
+    const tn = toplamNet(s);
+    const p  = puan(s);
+    const turText = normalizeTur(s.sinavTur);
+    const turSlug = turText==='Bireysel'?'bireysel':turText==='Okul'?'okul':'meb';
+    const netCells = DERSLER.map(dr=>{
+      const obj = s[dr.key] || {d:0,y:0,b:0};
+      const n = net(obj);
+      const renk = netColor(n, dr.soru);
+      return `<td class="score-cell">
+        <div class="score-net" style="color:${renk}">${fmtNet(n)}</div>
+        <div class="score-dyb"><span>D:${fmtInt(obj.d)}</span><span>Y:${fmtInt(obj.y)}</span><span>B:${fmtInt(obj.b)}</span></div>
+      </td>`;
+    }).join('');
+    return `<tr>
+      <td class="select-col"><input type="checkbox" class="row-check" aria-label="Sınav seç" ${seciliNo===s.no?'checked':''} onchange="setSeciliSinav(${s.no}, this.checked)"></td>
+      <td class="mono" style="color:var(--text3)">${s.no}</td>
+      <td class="mono" style="color:var(--text2)">${s.sinavNo ?? ''}</td>
+      <td class="table-date">${s.tarih}</td>
+      <td><span class="badge badge-${turSlug}">${turText}</span></td>
+      <td class="hide-sm" style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);font-size:12px">${s.yayinevi}</td>
+      ${netCells}
+      <td class="score-cell">
+        <div class="score-net" style="font-weight:600;color:${netColor(tn, TOPLAM_SORU)}">${fmtNet(tn)}</div>
+        <div class="score-dyb total"><span>D:${toplamDogru(s)}</span><span>Y:${toplamYanlis(s)}</span><span>B:${toplamBos(s)}</span></div>
+      </td>
+      <td class="mono" style="font-weight:600;color:${puanColor(p)}">${fmtPuan(p)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('sinav-tbody').innerHTML = rows ||
+    `<tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text3)">Kayıt bulunamadı</td></tr>`;
+  updateTableActions();
 }
 
-// ── LIGHTBOX ──
-window.lightboxAcSrc = function(prefix, firestoreId) {
-  const d = dersler.find(x => x.firestoreId === firestoreId);
-  if (d && d.gorsel) {
-    document.getElementById('lightbox-img').src = d.gorsel;
-    document.getElementById('lightbox').classList.add('open');
-  }
-};
-window.lightboxKapat = function() { document.getElementById('lightbox').classList.remove('open'); };
+function updateTableActions(){
+  const el = document.getElementById('table-actions');
+  if(!el){ return; }
+  el.classList.toggle('open', seciliNo !== null);
+}
 
-// ── TEKRAR ──
-window.initTekrar = function initTekrar() {
-  if (dersler.length === 0) {
-    document.getElementById('tekrar-card').innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">Henüz not eklemedin. Önce ders ekle!</div>`;
+function setSeciliSinav(no, checked){
+  seciliNo = checked ? no : null;
+  renderTable();
+}
+
+function duzenleSecili(){
+  if(seciliNo === null){ return; }
+  openModal(seciliNo);
+}
+
+function silSecili(){
+  if(seciliNo === null){ return; }
+  silSinav(seciliNo);
+}
+
+function setTab(el, tur){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  aktifTur = tur;
+  render();
+}
+
+function setTrendMode(mode){
+  trendMode = mode;
+  renderTrendChart();
+}
+
+// ──────────────────────────────────────
+// MODAL
+// ──────────────────────────────────────
+function openModal(no=null){
+  duzenlenenNo = no;
+  const kayit = no !== null ? veri.find(s=>s.no === no) : null;
+  const isEdit = !!kayit;
+
+  document.getElementById('modal-title').textContent = isEdit ? 'Sınavı düzenle' : 'Yeni sınav ekle';
+  document.getElementById('save-btn').textContent = isEdit ? 'Güncelle' : 'Kaydet';
+
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('f-tarih').value = kayit?.tarih || today;
+  document.getElementById('f-tur').value = normalizeTur(kayit?.sinavTur || 'Bireysel') || 'Bireysel';
+  document.getElementById('f-sinav-no').value = kayit?.sinavNo ?? '';
+  document.getElementById('f-yayinevi').value = kayit?.yayinevi || '';
+
+  // Ders inputları oluştur
+  const grid = document.getElementById('ders-form-grid');
+  // header satırını koru, diğerlerini temizle
+  const header = grid.querySelector('.ders-grid-head');
+  grid.innerHTML = '';
+  grid.appendChild(header);
+
+  DERSLER.forEach(dr=>{
+    const dersVal = kayit?.[dr.key] || {d:'', y:'', b:''};
+    const rowD = document.createElement('div'); rowD.className='ders-row-g';
+    rowD.innerHTML = `
+      <div class="ders-name-cell">
+        <span class="ders-color-dot" style="background:${dr.renk}"></span>
+        ${dr.ad}
+      </div>
+      <input type="number" id="f-${dr.key}-d" min="0" max="${dr.soru}" placeholder="0" value="${dersVal.d ?? ''}" oninput="updateNet('${dr.key}')">
+      <input type="number" id="f-${dr.key}-y" min="0" max="${dr.soru}" placeholder="0" value="${dersVal.y ?? ''}" oninput="updateNet('${dr.key}')">
+      <input type="number" id="f-${dr.key}-b" min="0" max="${dr.soru}" placeholder="0" value="${dersVal.b ?? ''}" oninput="updateNet('${dr.key}')">
+      <div class="ders-net-cell" id="net-${dr.key}">—</div>
+    `;
+    grid.appendChild(rowD);
+    updateNet(dr.key);
+  });
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function dersGirdiToplam(key){
+  const d = parseInt(document.getElementById(`f-${key}-d`)?.value)||0;
+  const y = parseInt(document.getElementById(`f-${key}-y`)?.value)||0;
+  const b = parseInt(document.getElementById(`f-${key}-b`)?.value)||0;
+  return {d,y,b,toplam:d+y+b};
+}
+
+function dersGirdiGecerli(key){
+  const dr = DERSLER.find(d=>d.key===key);
+  const vals = dersGirdiToplam(key);
+  return vals.toplam <= dr.soru && vals.d <= dr.soru && vals.y <= dr.soru && vals.b <= dr.soru;
+}
+
+function updateNet(key){
+  const dr = DERSLER.find(d=>d.key===key);
+  const vals = dersGirdiToplam(key);
+  const n = vals.d - vals.y/3;
+  const el = document.getElementById(`net-${key}`);
+
+  ['d','y','b'].forEach(t=>{
+    const input = document.getElementById(`f-${key}-${t}`);
+    if(input){
+      input.setCustomValidity(vals.toplam > dr.soru ? `${dr.ad} için doğru, yanlış ve boş toplamı en fazla ${dr.soru} olabilir.` : '');
+    }
+  });
+
+  if(vals.toplam > dr.soru){
+    el.textContent = `Max ${dr.soru}`;
+    el.style.color = 'var(--danger)';
     return;
   }
-  tekrarSira = shuffle([...dersler]);
-  tekrarIndex = 0;
-  document.getElementById('tekrar-bitti').style.display = 'none';
-  goster();
+
+  el.textContent = fmtNet(n);
+  el.style.color = n >= dr.soru*0.85 ? 'var(--accent)' : n < 0 ? 'var(--danger)' : 'var(--text2)';
 }
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
-  return arr;
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  duzenlenenNo = null;
 }
 
-function goster() {
-  if (tekrarIndex >= tekrarSira.length) {
-    document.getElementById('tekrar-bitti').style.display = 'block';
-    document.getElementById('t-unite').textContent = '—';
-    document.getElementById('t-ders').textContent = '';
-    document.getElementById('t-detay').textContent = '';
-    document.getElementById('t-detay').classList.remove('show');
-    document.getElementById('t-img').classList.remove('show');
-    updateProgress(); return;
+function handleOverlayClick(e){
+  if(e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function kaydet(){
+  const tarih = document.getElementById('f-tarih').value;
+  const tur   = document.getElementById('f-tur').value;
+  const sinavNoInput = document.getElementById('f-sinav-no').value;
+  const sinavNo = sinavNoInput === '' ? '' : Number(sinavNoInput);
+  const yayinevi = document.getElementById('f-yayinevi').value || tur;
+  if(!tarih){ alert('Lütfen tarih seçin.'); return; }
+
+  const hataliDers = DERSLER.find(dr=>!dersGirdiGecerli(dr.key));
+  if(hataliDers){
+    alert(`${hataliDers.ad} için doğru, yanlış ve boş toplamı en fazla ${hataliDers.soru} olabilir.`);
+    updateNet(hataliDers.key);
+    return;
   }
-  const d = tekrarSira[tekrarIndex];
-  document.getElementById('t-unite').textContent = d.alt ? `${d.unite} › ${d.alt}` : d.unite;
-  document.getElementById('t-ders').textContent = d.ders;
-  document.getElementById('t-detay').textContent = d.detay;
-  document.getElementById('t-detay').classList.remove('show');
-  document.getElementById('tekrar-bitti').style.display = 'none';
-  const imgBox = document.getElementById('t-img');
-  const imgEl = document.getElementById('t-img-el');
-  if (d.gorsel) { imgEl.src = d.gorsel; imgBox.classList.add('show'); }
-  else { imgEl.src = ''; imgBox.classList.remove('show'); }
-  updateProgress();
+
+  const hedef = duzenlenenNo !== null ? veri.find(s=>s.no === duzenlenenNo) : null;
+  const kayit = hedef || {no: 0};
+  kayit.tarih = tarih;
+  kayit.sinavTur = tur;
+  kayit.sinavNo = sinavNo;
+  kayit.yayinevi = yayinevi;
+
+  DERSLER.forEach(dr=>{
+    const d = parseInt(document.getElementById(`f-${dr.key}-d`).value)||0;
+    const y = parseInt(document.getElementById(`f-${dr.key}-y`).value)||0;
+    const b = parseInt(document.getElementById(`f-${dr.key}-b`).value)||0;
+    kayit[dr.key] = {d,y,b};
+  });
+
+  if(!hedef){ veri.push(kayit); }
+  siralaVeNumaralandir();
+  closeModal();
+  render();
 }
 
-function updateProgress() {
-  const pct = tekrarSira.length > 0 ? Math.round((tekrarIndex / tekrarSira.length) * 100) : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-}
-window.toggleCevap = function() { document.getElementById('t-detay').classList.toggle('show'); };
-window.sonraki = function() { tekrarIndex++; goster(); };
-
-// ── İSTATİSTİK ──
-window.renderIstatistik = function renderIstatistik() {
-  const toplam = dersler.length;
-  const dersAdlari = ['Matematik','Fen Bilimleri','Türkçe','İnkılap Tarihi','Din Kültürü','İngilizce'];
-  const sayim = {}; dersAdlari.forEach(d => sayim[d] = 0);
-  dersler.forEach(d => { if (sayim[d.ders] !== undefined) sayim[d.ders]++; });
-  const gorselSayisi = dersler.filter(d => d.gorsel).length;
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-box"><div class="num">${toplam}</div><div class="lbl">Toplam Not</div></div>
-    <div class="stat-box"><div class="num">${dersAdlari.filter(d => sayim[d] > 0).length}</div><div class="lbl">Farklı Ders</div></div>
-    <div class="stat-box"><div class="num">${gorselSayisi}</div><div class="lbl">Görsel Ekli</div></div>
-  `;
-  const max = Math.max(...Object.values(sayim), 1);
-  document.getElementById('ders-breakdown').innerHTML = `
-    <h3>Derse Göre Dağılım</h3>
-    ${dersAdlari.map(d => `
-      <div class="ders-row">
-        <span class="ders-name">${d.split(' ')[0]}</span>
-        <div class="ders-bar-track"><div class="ders-bar-fill" style="width:${Math.round(sayim[d]/max*100)}%"></div></div>
-        <span class="ders-cnt">${sayim[d]}</span>
-      </div>
-    `).join('')}
-  `;
+function silSinav(no){
+  const kayit = veri.find(s=>s.no === no);
+  if(!kayit){ return; }
+  const ad = kayit.yayinevi || 'Bu sınav';
+  if(!confirm(`${kayit.tarih} tarihli "${ad}" kaydı silinsin mi?`)){ return; }
+  veri = veri.filter(s=>s.no !== no);
+  if(seciliNo === no){ seciliNo = null; }
+  siralaVeNumaralandir();
+  render();
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = '✅ ' + msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-// ── BAŞLAT ──
-dersSecildi();
+// ──────────────────────────────────────
+// BAŞLAT
+// ──────────────────────────────────────
+siralaVeNumaralandir();
+render();
 </script>
 </body>
 </html>
