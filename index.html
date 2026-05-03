@@ -409,7 +409,6 @@ tbody tr:hover td { background: var(--surface2); }
     <div class="panel">
       <div class="panel-title"><span class="dot"></span>Ders bazında ağırlıklı net ort.</div>
       <div class="chart-wrap" style="height:320px"><canvas id="dersChart"></canvas></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px">Son 14 sınava ağırlık uygulandı; ilk kayıtlarda mevcut sınav sayısına göre normalize edilir</div>
     </div>
     <div class="panel">
       <div class="panel-title panel-title-select">
@@ -896,7 +895,7 @@ function renderKPI(){
   const onceki  = liste.length > 1 ? puan(liste[liste.length-2]) : null;
   const fark    = onceki !== null ? sonPuan - onceki : null;
   const enYuksek = Math.max(...liste.map(s=>puan(s)));
-  const genelOrt = liste.reduce((a,s)=>a+puan(s),0)/liste.length;
+  const agirlikliPuanOrt = (agirlikliPuanSeri(liste).slice(-1)[0]) || 0;
 
   let trendHtml = '';
   if(fark !== null){
@@ -917,8 +916,8 @@ function renderKPI(){
       <div class="kpi-trend">${TOPLAM_SORU} sorudan</div>
     </div>
     <div class="kpi-card kpi-purple">
-      <div class="kpi-label">Genel puan ort.</div>
-      <div class="kpi-val" style="color:${puanColor(genelOrt)}">${fmtPuan(genelOrt)}</div>
+      <div class="kpi-label">Ağırlıklı puan ortalaması</div>
+      <div class="kpi-val" style="color:${puanColor(agirlikliPuanOrt)}">${fmtPuan(agirlikliPuanOrt)}</div>
     </div>
     <div class="kpi-card kpi-orange">
       <div class="kpi-label">En yüksek puan</div>
@@ -952,18 +951,54 @@ function renderDersChart(){
       const {ctx} = chart;
       const meta = chart.getDatasetMeta(0);
       ctx.save();
-      ctx.font = '800 12px DM Sans, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       meta.data.forEach((bar, i)=>{
         const pct = ortalar[i] || 0;
-        const label = `%${fmtNet(pct)}`;
-        const y = Math.max(bar.y + 14, Math.min(bar.base - 14, bar.y + (bar.base - bar.y) * 0.45));
-        ctx.fillStyle = barLabelColors[i] || '#1a1916';
-        ctx.shadowColor = 'rgba(255,255,255,0.70)';
-        ctx.shadowBlur = 3;
-        ctx.fillText(label, bar.x, y);
+        const pctLabel = `%${fmtNet(pct)}`;
+        const perfColor = barBorderColors[i] || '#1a1916';
+        const labelColor = barLabelColors[i] || perfColor;
+        const barTop = Math.min(bar.y, bar.base);
+        const labelH = 18;
+        const radius = 5;
+
+        ctx.font = '800 12px DM Sans, sans-serif';
+        const labelW = Math.max(42, ctx.measureText(pctLabel).width + 14);
+        const x = bar.x - labelW / 2;
+        const y = Math.max(chart.chartArea.top + 4, barTop - labelH - 7);
+
+        const drawPill = (px, py, pw, ph) => {
+          ctx.beginPath();
+          if(ctx.roundRect){
+            ctx.roundRect(px, py, pw, ph, radius);
+          }else{
+            ctx.moveTo(px+radius, py);
+            ctx.lineTo(px+pw-radius, py);
+            ctx.quadraticCurveTo(px+pw, py, px+pw, py+radius);
+            ctx.lineTo(px+pw, py+ph-radius);
+            ctx.quadraticCurveTo(px+pw, py+ph, px+pw-radius, py+ph);
+            ctx.lineTo(px+radius, py+ph);
+            ctx.quadraticCurveTo(px, py+ph, px, py+ph-radius);
+            ctx.lineTo(px, py+radius);
+            ctx.quadraticCurveTo(px, py, px+radius, py);
+          }
+          ctx.fill();
+          ctx.stroke();
+        };
+
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.strokeStyle = perfColor;
+        ctx.lineWidth = 0.65;
+        ctx.shadowColor = 'rgba(0,0,0,0.07)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 1;
+        drawPill(x, y, labelW, labelH);
         ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+
+        ctx.fillStyle = labelColor;
+        ctx.font = '800 12px DM Sans, sans-serif';
+        ctx.fillText(pctLabel, bar.x, y + labelH / 2 + 0.5);
       });
       ctx.restore();
     }
@@ -984,7 +1019,7 @@ function renderDersChart(){
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      layout:{padding:{top:8}},
+      layout:{padding:{top:28}},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>{
