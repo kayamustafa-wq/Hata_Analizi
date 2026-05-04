@@ -336,6 +336,19 @@ tbody tr:hover td { background: var(--surface2); }
 }
 .search-input:focus { outline: none; border-color: var(--accent); }
 
+.date-filter {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 6px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface2);
+}
+.date-filter label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; }
+.date-filter input {
+  padding: 5px 7px; border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text2); background: var(--surface);
+}
+.date-filter input:focus { outline:none; border-color: var(--accent); }
+@media(max-width:640px){ .date-filter { width: 100%; justify-content: space-between; } .date-filter input { flex:1; min-width:0; } }
+
 
 /* ─── Mobile exam cards ─────────────────── */
 .mobile-card-list { display: none; padding: 12px; background: var(--surface2); }
@@ -444,6 +457,12 @@ tbody tr:hover td { background: var(--surface2); }
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="date-filter" title="Tarih aralığı filtresi">
+          <label>Başlangıç</label>
+          <input type="date" id="filter-start" onchange="render()">
+          <label>Bitiş</label>
+          <input type="date" id="filter-end" onchange="render()">
+        </div>
         <input class="search-input" id="search-input" placeholder="Ara..." oninput="render()">
         <div class="tab-bar" id="tur-tabs">
           <button class="tab active" onclick="setTab(this,'Tümü')">Tümü</button>
@@ -729,47 +748,51 @@ function normalizeTur(tur){
 
 function getFilteredData(includeSearch=true){
   const qEl = document.getElementById('search-input');
+  const startEl = document.getElementById('filter-start');
+  const endEl = document.getElementById('filter-end');
   const q = includeSearch && qEl ? (qEl.value || '').trim().toLowerCase() : '';
+  const startDate = startEl ? (startEl.value || '') : '';
+  const endDate = endEl ? (endEl.value || '') : '';
   return veri.filter(s=>{
     const tur = normalizeTur(s.sinavTur);
+    const tarih = String(s.tarih || '');
     const turOk = aktifTur === 'Tümü' || tur === aktifTur;
+    const dateOk = (!startDate || tarih >= startDate) && (!endDate || tarih <= endDate);
     const searchOk = !q ||
       String(s.yayinevi || '').toLowerCase().includes(q) ||
-      String(s.tarih || '').includes(q) ||
+      tarih.includes(q) ||
       String(s.sinavNo ?? '').includes(q) ||
       tur.toLowerCase().includes(q);
-    return turOk && searchOk;
+    return turOk && dateOk && searchOk;
   });
 }
-
 const PUAN_AGIRLIKLARI = [0.13,0.12,0.11,0.10,0.09,0.09,0.08,0.07,0.06,0.05,0.04,0.03,0.02,0.01];
+const AGIRLIKLI_MIN_KAYIT = 14;
+const ARITMETIK_PENCERE = 5;
+
+function hareketliDeger(liste, endIndex, getter){
+  const mevcutAdet = endIndex + 1;
+  if(mevcutAdet >= AGIRLIKLI_MIN_KAYIT){
+    let pay = 0;
+    for(let geriye=0; geriye<PUAN_AGIRLIKLARI.length; geriye++){
+      pay += PUAN_AGIRLIKLARI[geriye] * getter(liste[endIndex - geriye]);
+    }
+    return pay;
+  }
+  const pencere = Math.min(ARITMETIK_PENCERE, mevcutAdet);
+  let toplam = 0;
+  for(let geriye=0; geriye<pencere; geriye++){
+    toplam += getter(liste[endIndex - geriye]);
+  }
+  return pencere ? toplam / pencere : 0;
+}
 
 function agirlikliPuanSeri(liste){
-  return liste.map((_, endIndex)=>{
-    const pencere = Math.min(PUAN_AGIRLIKLARI.length, endIndex + 1);
-    let pay=0, payda=0;
-    for(let geriye=0; geriye<pencere; geriye++){
-      const sinav = liste[endIndex - geriye];
-      const w = PUAN_AGIRLIKLARI[geriye];
-      pay += w * puan(sinav);
-      payda += w;
-    }
-    return payda ? pay/payda : 0;
-  });
+  return liste.map((_, endIndex)=>hareketliDeger(liste, endIndex, puan));
 }
 
 function agirlikliDersSeri(liste, dersKey){
-  return liste.map((_, endIndex)=>{
-    const pencere = Math.min(PUAN_AGIRLIKLARI.length, endIndex + 1);
-    let pay=0, payda=0;
-    for(let geriye=0; geriye<pencere; geriye++){
-      const sinav = liste[endIndex - geriye];
-      const w = PUAN_AGIRLIKLARI[geriye];
-      pay += w * net(sinav[dersKey]);
-      payda += w;
-    }
-    return payda ? pay/payda : 0;
-  });
+  return liste.map((_, endIndex)=>hareketliDeger(liste, endIndex, s=>net(s[dersKey])));
 }
 
 function siralaVeNumaralandir(){
@@ -844,17 +867,9 @@ function readableLabelColor(n, soru){
 }
 
 function agirlikliOrt(dersKey, liste=getFilteredData()){
-  const pencere = Math.min(PUAN_AGIRLIKLARI.length, liste.length);
-  let pay=0, payda=0;
-  for(let geriye=0; geriye<pencere; geriye++){
-    const sinav = liste[liste.length - 1 - geriye];
-    const w = PUAN_AGIRLIKLARI[geriye];
-    pay += w * net(sinav[dersKey]);
-    payda += w;
-  }
-  return payda ? pay/payda : 0;
+  if(!liste.length){ return 0; }
+  return hareketliDeger(liste, liste.length - 1, s=>net(s[dersKey]));
 }
-
 // ──────────────────────────────────────
 // DURUM
 // ──────────────────────────────────────
